@@ -11,4 +11,7 @@ class AppColors {
   static const Color rating = Color(0xFFFFD700);
   static const Color gradientStart = Color(0xFFE94560);
   static const Color gradientEnd = Color(0xFF533483);
+  static const Color error = Color(0xFFE57373); // Cho nút đăng xuất, Snackbar báo lỗi
+  static const Color success = Color(0xFF4CAF50); // Cho Snackbar thành công
+  static const Color textButton = Color(0xFF000000); // Cho chữ màu đen trong nút Vàng
 }

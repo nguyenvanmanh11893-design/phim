@@ -3,6 +3,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../home/screens/home_screen.dart';
 import '../../movie/screens/movie_screen.dart';
+import '../../profile/screens/profile_screen.dart'; 
 // ================================================================
 // MAIN SCREEN - Nơi quản lý Bottom Navigation Bar CỐ ĐỊNH
 // ================================================================
@@ -36,7 +37,7 @@ class _MainScreenState extends State<MainScreen> {
     const HomeScreen(),
     const TicketScreen(),
     const MovieScreen(),
-    // const ProfileScreen(),
+    const ProfileScreen(),
   ];
 
   final List<NavItem> _navItems = const [

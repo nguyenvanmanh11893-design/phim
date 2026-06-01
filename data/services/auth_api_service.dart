@@ -14,7 +14,7 @@ class AuthApiService {
   Future<Map<String, dynamic>> register(String email, String username, String password) async {
     final response = await _dioClient.dio.post('/auth/signUp', data: {
       'email': email,
-      'username': username,
+      'name': username,
       'password': password,
     });
     return response.data;

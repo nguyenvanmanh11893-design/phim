@@ -42,8 +42,8 @@ class SocialLoginButtons extends StatelessWidget {
               icon: FontAwesomeIcons.google,
               label: 'Google',
               onTap: onGoogle,
-              color: Colors.white,
-              textColor: Colors.black,
+              color: AppColors.textPrimary,
+              textColor: AppColors.textButton,
             ),
           ],
         ),
@@ -61,7 +61,10 @@ class SocialLoginButtons extends StatelessWidget {
     return ElevatedButton.icon(
       onPressed: onTap,
       icon: Icon(icon, color: textColor),
-      label: Text(label, style: AppTextStyles.button.copyWith(color: textColor)),
+      label: Text(
+        label,
+        style: AppTextStyles.button.copyWith(color: textColor),
+      ),
       style: ElevatedButton.styleFrom(
         backgroundColor: color,
         foregroundColor: textColor,
