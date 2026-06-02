@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/constants/app_strings.dart';
+import '../../../core/utils/snackbar_utils.dart';
 import '../../../core/widgets/custom_app_bar.dart';
 import '../../../core/widgets/loading_indicator.dart';
-import '../../../core/widgets/error_view.dart';
 import '../../../core/widgets/auth_text_field.dart';
 import '../../../core/widgets/social_login_buttons.dart';
+import '../../../routes/app_routes.dart';
 import '../providers/auth_provider.dart';
-import '../../home/screens/home_screen.dart';
 import 'register_username_screen.dart';
-import 'login_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -25,6 +25,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmController = TextEditingController();
+
   @override
   void dispose() {
     _emailController.dispose();
@@ -33,7 +34,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _confirmController.dispose();
     super.dispose();
   }
+
   Future<void> _handleContinue() async {
+    // 1. Kiểm tra Lỗi tĩnh
     if (!_formKey.currentState!.validate()) return;
 
     final authProvider = context.read<AuthProvider>();
@@ -47,33 +50,28 @@ class _RegisterScreenState extends State<RegisterScreen> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (_) =>
-              RegisterUsernameScreen(username: _usernameController.text.trim()),
+          builder: (_) => RegisterUsernameScreen(username: _usernameController.text.trim()),
         ),
       );
+    } else {
+      // 2. Bắt lỗi động
+      if (mounted && authProvider.errorMessage != null) {
+        SnackbarUtils.showError(context, authProvider.errorMessage!);
+        authProvider.clearError();
+      }
     }
   }
 
   Future<void> _handleFacebook() async {
     final authProvider = context.read<AuthProvider>();
     final success = await authProvider.loginWithFacebook();
-    if (success && mounted) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => HomeScreen()),
-      );
-    }
+    if (success && mounted) Navigator.pushReplacementNamed(context, AppRoutes.main);
   }
 
   Future<void> _handleGoogle() async {
     final authProvider = context.read<AuthProvider>();
     final success = await authProvider.loginWithGoogle();
-    if (success && mounted) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => HomeScreen()),
-      );
-    }
+    if (success && mounted) Navigator.pushReplacementNamed(context, AppRoutes.main);
   }
 
   @override
@@ -81,7 +79,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final authProvider = context.watch<AuthProvider>();
 
     return Scaffold(
-      appBar: CustomAppBar(title: 'Sign up', actions: []),
+      appBar: const CustomAppBar(title: AppStrings.signUp, actions: []),
       body: Stack(
         children: [
           SingleChildScrollView(
@@ -93,44 +91,36 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 children: [
                   const SizedBox(height: 20),
                   AuthTextField(
-                    hint: 'Email',
+                    hint: AppStrings.email,
                     prefixIcon: Icons.email,
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
-                    validator: (value) => value == null || value.isEmpty
-                        ? 'Vui l뿯½ng nh뿯ẽp email'
-                        : null,
+                    validator: (value) => value == null || value.isEmpty ? AppStrings.pleaseEnterEmail : null,
                   ),
                   const SizedBox(height: 16),
                   AuthTextField(
-                    hint: 'Username',
+                    hint: AppStrings.username,
                     prefixIcon: Icons.person,
                     controller: _usernameController,
-                    validator: (value) => value == null || value.isEmpty
-                        ? 'Vui l뿯½ng nh뿯ẽp username'
-                        : null,
+                    validator: (value) => value == null || value.isEmpty ? AppStrings.pleaseEnterUsername : null,
                   ),
                   const SizedBox(height: 16),
                   AuthTextField(
-                    hint: 'Password',
+                    hint: AppStrings.password,
                     prefixIcon: Icons.lock_outline,
                     controller: _passwordController,
                     obscureText: true,
-                    validator: (value) => value == null || value.isEmpty
-                        ? 'Vui l뿯½ng nh뿯ẽp m뿯ẽt kh뿯ẽu'
-                        : null,
+                    validator: (value) => value == null || value.isEmpty ? AppStrings.pleaseEnterPassword : null,
                   ),
                   const SizedBox(height: 16),
                   AuthTextField(
-                    hint: 'Confirm Password',
+                    hint: AppStrings.confirmPassword,
                     prefixIcon: Icons.lock_outline,
                     controller: _confirmController,
                     obscureText: true,
                     validator: (value) {
-                      if (value == null || value.isEmpty)
-                        return 'Vui l뿯½ng x뿯½c nh뿯ẽn m뿯ẽt kh뿯ẽu';
-                      if (value != _passwordController.text)
-                        return 'M뿯ẽt kh뿯ẽu kh뿯½ng kh뿯ẽp';
+                      if (value == null || value.isEmpty) return AppStrings.pleaseConfirmPassword;
+                      if (value != _passwordController.text) return AppStrings.passwordNotMatch;
                       return null;
                     },
                   ),
@@ -141,11 +131,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       backgroundColor: AppColors.secondary,
                       foregroundColor: Colors.black,
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
-                    child: Text('Continue', style: AppTextStyles.button),
+                    child: const Text(AppStrings.continueBtn, style: AppTextStyles.button),
                   ),
                   const SizedBox(height: 24),
                   SocialLoginButtons(
@@ -155,21 +143,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   const SizedBox(height: 24),
                   TextButton(
                     onPressed: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (_) => LoginScreen()),
-                      );
+                      Navigator.pushReplacementNamed(context, AppRoutes.login);
                     },
                     child: Text(
-                      'Already have an account? Sign in',
-                      style: AppTextStyles.bodyLarge.copyWith(
-                        color: AppColors.secondary,
-                      ),
+                      AppStrings.alreadyHaveAccount,
+                      style: AppTextStyles.bodyLarge.copyWith(color: AppColors.secondary),
                     ),
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'By sign in or sign up, you agree to our Terms of Service and Privacy Policy',
+                    AppStrings.termsAndPrivacy,
                     style: AppTextStyles.bodyMedium.copyWith(fontSize: 10),
                     textAlign: TextAlign.center,
                   ),
@@ -177,11 +160,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
             ),
           ),
-          if (authProvider.errorMessage != null)
-            ErrorView(
-              message: authProvider.errorMessage!,
-              onRetry: authProvider.clearError,
-            ),
           if (authProvider.isLoading) const LoadingIndicator(),
         ],
       ),

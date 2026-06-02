@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
-import '../../../../core/constants/app_strings.dart'; // Import chuỗi đa ngôn ngữ/hằng số
-import '../../../../core/utils/snackbar_utils.dart'; // Import thông báo chung
+import '../../../../core/constants/app_strings.dart'; 
+import '../../../../core/utils/snackbar_utils.dart';
+import '../providers/profile_provider.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -12,11 +14,21 @@ class EditProfileScreen extends StatefulWidget {
 }
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
-  final _nameController = TextEditingController(text: AppStrings.mockUserName);
-  final _phoneController = TextEditingController(
-    text: AppStrings.mockPhoneNumber,
-  );
+  final _nameController = TextEditingController();
+  final _phoneController = TextEditingController();
   final _dobController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    // Điền trước thông tin hiện tại
+    final user = context.read<ProfileProvider>().user;
+    if (user != null) {
+      _nameController.text = user.name;
+      _phoneController.text = user.phone ?? '';
+      _dobController.text = user.dateOfBirth ?? '';
+    }
+  }
 
   @override
   void dispose() {
@@ -28,13 +40,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<ProfileProvider>();
+    final user = provider.user;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text(
-          AppStrings.editProfile,
-          style: AppTextStyles.headlineMedium,
-        ),
+        title: Text(AppStrings.editProfile, style: AppTextStyles.headlineMedium),
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
@@ -49,38 +61,26 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             Center(
               child: GestureDetector(
                 onTap: () {
-                  // TODO: Logic mở picker ảnh (Gallery hoặc Camera)
-                  // Tạm thời show thông báo mock
-                  SnackbarUtils.showSuccess(
-                    context,
-                    AppStrings.openImagePicker,
-                  );
+                  // TODO: Gọi Image Picker -> API POST /upload/image -> lấy URL lưu vào biến
+                  SnackbarUtils.showSuccess(context, AppStrings.openImagePicker);
                 },
                 child: Stack(
                   children: [
-                    const CircleAvatar(
+                    CircleAvatar(
                       radius: 50,
                       backgroundColor: AppColors.surface,
-                      child: Icon(
-                        Icons.person,
-                        size: 50,
-                        color: AppColors.textSecondary,
-                      ),
+                      backgroundImage: user?.avatarUrl != null ? NetworkImage(user!.avatarUrl!) : null,
+                      child: user?.avatarUrl == null 
+                          ? const Icon(Icons.person, size: 50, color: AppColors.textSecondary)
+                          : null,
                     ),
                     Positioned(
                       bottom: 0,
                       right: 0,
                       child: Container(
                         padding: const EdgeInsets.all(8),
-                        decoration: const BoxDecoration(
-                          color: AppColors.secondary,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.camera_alt,
-                          color: AppColors.textButton,
-                          size: 18,
-                        ),
+                        decoration: const BoxDecoration(color: AppColors.secondary, shape: BoxShape.circle),
+                        child: const Icon(Icons.camera_alt, color: AppColors.textButton, size: 18),
                       ),
                     ),
                   ],
@@ -88,17 +88,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ),
             ),
             const SizedBox(height: 32),
-            _buildTextField(
-              AppStrings.fullName,
-              Icons.person_outline,
-              _nameController,
-            ),
+            _buildTextField(AppStrings.fullName, Icons.person_outline, _nameController),
             const SizedBox(height: 16),
-            _buildTextField(
-              AppStrings.phoneNumber,
-              Icons.phone_outlined,
-              _phoneController,
-            ),
+            _buildTextField(AppStrings.phoneNumber, Icons.phone_outlined, _phoneController),
             const SizedBox(height: 16),
             _buildTextField(
               AppStrings.dateOfBirth,
@@ -106,7 +98,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               _dobController,
               readOnly: true,
               onTap: () async {
-                // Mở bảng chọn ngày sinh
                 DateTime? pickedDate = await showDatePicker(
                   context: context,
                   initialDate: DateTime.now(),
@@ -115,8 +106,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 );
                 if (pickedDate != null) {
                   setState(() {
-                    _dobController.text =
-                        "${pickedDate.day}/${pickedDate.month}/${pickedDate.year}";
+                    _dobController.text = "${pickedDate.day}/${pickedDate.month}/${pickedDate.year}";
                   });
                 }
               },
@@ -126,27 +116,33 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               width: double.infinity,
               height: 50,
               child: ElevatedButton(
-                onPressed: () {
-                  // TODO: Gọi API PATCH /users/me (tên, sđt, ngày sinh, avatarUrl)
-                  SnackbarUtils.showSuccess(
-                    context,
-                    AppStrings.updateProfileSuccess,
+                onPressed: provider.isLoading ? null : () async {
+                  final success = await provider.updateProfile(
+                    name: _nameController.text.trim(),
+                    phone: _phoneController.text.trim(),
+                    dob: _dobController.text.trim(),
                   );
-                  Navigator.pop(context);
+                  if (success) {
+                    if (context.mounted) {
+                      SnackbarUtils.showSuccess(context, AppStrings.updateProfileSuccess);
+                      Navigator.pop(context);
+                    }
+                  } else {
+                    if (context.mounted && provider.error != null) {
+                      SnackbarUtils.showError(context, provider.error!);
+                    }
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.secondary,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(25),
-                  ),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
                 ),
-                child: Text(
-                  AppStrings.saveChanges,
-                  style: AppTextStyles.bodyLarge.copyWith(
-                    color: AppColors.textButton,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                child: provider.isLoading 
+                    ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2))
+                    : Text(
+                        AppStrings.saveChanges,
+                        style: AppTextStyles.bodyLarge.copyWith(color: AppColors.textButton, fontWeight: FontWeight.bold),
+                      ),
               ),
             ),
           ],
@@ -155,13 +151,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
-  Widget _buildTextField(
-    String label,
-    IconData icon,
-    TextEditingController controller, {
-    bool readOnly = false,
-    VoidCallback? onTap,
-  }) {
+  Widget _buildTextField(String label, IconData icon, TextEditingController controller, {bool readOnly = false, VoidCallback? onTap}) {
     return TextFormField(
       controller: controller,
       readOnly: readOnly,
@@ -169,18 +159,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       style: const TextStyle(color: AppColors.textPrimary),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: AppTextStyles.bodyMedium.copyWith(
-          color: AppColors.textSecondary,
-        ),
+        labelStyle: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
         prefixIcon: Icon(icon, color: AppColors.textSecondary),
         filled: true,
         fillColor: AppColors.background,
-        enabledBorder: const UnderlineInputBorder(
-          borderSide: BorderSide(color: AppColors.surface, width: 1),
-        ),
-        focusedBorder: const UnderlineInputBorder(
-          borderSide: BorderSide(color: AppColors.secondary, width: 1),
-        ),
+        enabledBorder: const UnderlineInputBorder(borderSide: BorderSide(color: AppColors.surface, width: 1)),
+        focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: AppColors.secondary, width: 1)),
       ),
     );
   }

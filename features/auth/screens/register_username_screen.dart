@@ -1,34 +1,33 @@
 ﻿import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/constants/app_strings.dart';
 import '../../../core/widgets/custom_app_bar.dart';
-import '../../home/screens/home_screen.dart';
+import '../../../routes/app_routes.dart';
 
 class RegisterUsernameScreen extends StatelessWidget {
   final String username;
   const RegisterUsernameScreen({super.key, required this.username});
 
   void _handleDone(BuildContext context) {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => HomeScreen()),
-    );
+    // Sửa luồng: Chạy về MainScreen thay vì HomeScreen
+    Navigator.pushReplacementNamed(context, AppRoutes.main);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(title: 'Sign up', actions: []),
+      appBar: const CustomAppBar(title: AppStrings.signUp, actions: []),
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 20),
-            Text('Welcome', style: AppTextStyles.headlineMedium),
+            const Text(AppStrings.welcome, style: AppTextStyles.headlineMedium),
             const SizedBox(height: 8),
-            Text(
-              'Your registered username is:',
+            const Text(
+              AppStrings.yourRegisteredUsernameIs,
               style: AppTextStyles.bodyMedium,
             ),
             const SizedBox(height: 24),
@@ -44,6 +43,7 @@ class RegisterUsernameScreen extends StatelessWidget {
                 style: AppTextStyles.bodyLarge.copyWith(
                   fontWeight: FontWeight.bold,
                   fontSize: 18,
+                  color: Colors.black, // Đảm bảo chữ đen nổi bật trên nền xám
                 ),
               ),
             ),
@@ -58,7 +58,7 @@ class RegisterUsernameScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: Text('Continue', style: AppTextStyles.button),
+              child: const Text(AppStrings.continueBtn, style: AppTextStyles.button),
             ),
           ],
         ),

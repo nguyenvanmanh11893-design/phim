@@ -46,7 +46,12 @@ class AuthRepository {
     return authResponse;
   }
   
-  Future<void> logout() async {
-    await _tokenStorage.clearTokens();
-  }
+  // Sửa lại hàm logout() trong class AuthRepository
+Future<void> logout() async {
+  // 1. Báo cho Backend xóa Refresh Token
+  await _apiService.signOut(); 
+  
+  // 2. Xóa Token ở bộ nhớ máy (Secure Storage)
+  await _tokenStorage.clearTokens(); 
+}
 }

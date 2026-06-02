@@ -19,7 +19,16 @@ class AuthApiService {
     });
     return response.data;
   }
-  
+
+
+Future<void> signOut() async {
+  try {
+    await _dioClient.dio.post('/auth/signOut');
+  } catch (e) {
+    // Có thể bỏ qua lỗi ở đây vì dù server có lỗi, ta vẫn phải cho user đăng xuất ở app
+    print('Lỗi gọi API signOut: $e');
+  }
+}
   // Fake responses for social logins
   Future<Map<String, dynamic>> loginWithFacebook() async {
     await Future.delayed(const Duration(seconds: 1));

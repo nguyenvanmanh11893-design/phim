@@ -5,7 +5,7 @@ import 'package:device_preview/device_preview.dart';
 
 import 'app.dart';
 import 'features/auth/providers/auth_provider.dart';
-
+import 'features/profile/providers/profile_provider.dart';
 void main() {
   runApp(
     DevicePreview(
@@ -15,6 +15,7 @@ void main() {
       builder: (context) => MultiProvider(
         providers: [
           ChangeNotifierProvider(create: (_) => AuthProvider()),
+          ChangeNotifierProvider(create: (_) => ProfileProvider()),
         ],
         child: const MyApp(),
       ),

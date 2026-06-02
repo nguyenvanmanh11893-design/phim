@@ -1,11 +1,9 @@
 ﻿import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/constants/app_strings.dart';
 import '../../../routes/app_routes.dart';
-import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/custom_app_bar.dart';
-import 'login_screen.dart';
-import 'register_screen.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
@@ -18,12 +16,12 @@ class WelcomeScreen extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () {},
-            child: Text('English', style: AppTextStyles.bodyLarge),
+            child: const Text('Tiếng Việt', style: AppTextStyles.bodyLarge),
           ),
         ],
       ),
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
@@ -33,7 +31,6 @@ class WelcomeScreen extends StatelessWidget {
         child: SafeArea(
           child: Column(
             children: [
-              // Poster giả lập (có thể thay bằng ảnh thật)
               Expanded(
                 flex: 3,
                 child: Column(
@@ -53,14 +50,13 @@ class WelcomeScreen extends StatelessWidget {
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 8),
-                    Text(
+                    const Text(
                       'APRIL 27',
                       style: AppTextStyles.titleSmall,
                     ),
                   ],
                 ),
               ),
-              // Phần nội dung chính
               Expanded(
                 flex: 2,
                 child: Container(
@@ -73,13 +69,13 @@ class WelcomeScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Text(
-                        'Movie App hello!',
+                      const Text(
+                        AppStrings.appGreeting,
                         style: AppTextStyles.headlineLarge,
                       ),
                       const SizedBox(height: 8),
-                      Text(
-                        'Enjoy your favorite movies',
+                      const Text(
+                        AppStrings.enjoyFavoriteMovies,
                         style: AppTextStyles.bodyLarge,
                       ),
                       const SizedBox(height: 32),
@@ -95,7 +91,7 @@ class WelcomeScreen extends StatelessWidget {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: Text('Sign in', style: AppTextStyles.button),
+                        child: const Text(AppStrings.signIn, style: AppTextStyles.button),
                       ),
                       const SizedBox(height: 16),
                       OutlinedButton(
@@ -109,11 +105,11 @@ class WelcomeScreen extends StatelessWidget {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: Text('Sign up', style: AppTextStyles.button.copyWith(color: AppColors.secondary)),
+                        child: Text(AppStrings.signUp, style: AppTextStyles.button.copyWith(color: AppColors.secondary)),
                       ),
                       const SizedBox(height: 24),
                       Text(
-                        'By sign in or sign up, you agree to our Terms of Service and Privacy Policy',
+                        AppStrings.termsAndPrivacy,
                         style: AppTextStyles.bodyMedium.copyWith(fontSize: 10),
                         textAlign: TextAlign.center,
                       ),

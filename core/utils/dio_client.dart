@@ -22,7 +22,7 @@ class DioClient {
     _dio.interceptors.add(AuthInterceptor(_dio, tokenStorage));
     
     // Nếu muốn in log để debug, có thể uncomment dòng này
-    // _dio.interceptors.add(LogInterceptor(responseBody: true, requestBody: true));
+     _dio.interceptors.add(LogInterceptor(requestHeader: true,responseBody: true, requestBody: true));
   }
 
   Dio get dio => _dio;

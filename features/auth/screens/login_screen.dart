@@ -2,15 +2,15 @@
 import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/constants/app_strings.dart';
+import '../../../core/utils/snackbar_utils.dart';
 import '../../../core/widgets/custom_app_bar.dart';
 import '../../../core/widgets/loading_indicator.dart';
-import '../../../core/widgets/error_view.dart';
 import '../../../core/widgets/auth_text_field.dart';
 import '../../../core/widgets/social_login_buttons.dart';
+import '../../../routes/app_routes.dart';
 import '../providers/auth_provider.dart';
-import '../../home/screens/home_screen.dart';
 import 'register_screen.dart';
-
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -25,7 +25,11 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
 
   Future<void> _handleLogin() async {
+    // Kiểm tra lỗi tĩnh (Validator)
     if (!_formKey.currentState!.validate()) return;
+
+    // ---> THÊM DÒNG NÀY ĐỂ XÓA SẠCH TOKEN HỎNG TRONG MÁY <---
+    //await context.read<AuthProvider>().logout();
     
     final authProvider = context.read<AuthProvider>();
     final success = await authProvider.loginWithEmail(
@@ -34,10 +38,14 @@ class _LoginScreenState extends State<LoginScreen> {
     );
     
     if (success && mounted) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => HomeScreen()),
-      );
+      // ĐÚNG LUỒNG: Về MainScreen để có Bottom Navigation
+      Navigator.pushReplacementNamed(context, AppRoutes.main);
+    } else {
+      // Bắt lỗi động từ API
+      if (mounted && authProvider.errorMessage != null) {
+        SnackbarUtils.showError(context, authProvider.errorMessage!);
+        authProvider.clearError(); // Clear sau khi show
+      }
     }
   }
 
@@ -45,7 +53,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final authProvider = context.read<AuthProvider>();
     final success = await authProvider.loginWithFacebook();
     if (success && mounted) {
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => HomeScreen()));
+      Navigator.pushReplacementNamed(context, AppRoutes.main);
     }
   }
 
@@ -53,7 +61,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final authProvider = context.read<AuthProvider>();
     final success = await authProvider.loginWithGoogle();
     if (success && mounted) {
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => HomeScreen()));
+      Navigator.pushReplacementNamed(context, AppRoutes.main);
     }
   }
 
@@ -62,7 +70,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final authProvider = context.watch<AuthProvider>();
 
     return Scaffold(
-      appBar: CustomAppBar(title: 'Sign in', actions: []),
+      appBar: const CustomAppBar(title: AppStrings.signIn, actions: []),
       body: Stack(
         children: [
           SingleChildScrollView(
@@ -74,19 +82,19 @@ class _LoginScreenState extends State<LoginScreen> {
                 children: [
                   const SizedBox(height: 20),
                   AuthTextField(
-                    hint: 'Email',
+                    hint: AppStrings.email,
                     prefixIcon: Icons.email,
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
-                    validator: (value) => value == null || value.isEmpty ? 'Vui lòng nhập email' : null,
+                    validator: (value) => value == null || value.isEmpty ? AppStrings.pleaseEnterEmail : null,
                   ),
                   const SizedBox(height: 16),
                   AuthTextField(
-                    hint: 'Password',
+                    hint: AppStrings.password,
                     prefixIcon: Icons.lock_outline,
                     controller: _passwordController,
                     obscureText: true,
-                    validator: (value) => value == null || value.isEmpty ? 'Vui lòng nhập mật khẩu' : null,
+                    validator: (value) => value == null || value.isEmpty ? AppStrings.pleaseEnterPassword : null,
                   ),
                   const SizedBox(height: 32),
                   ElevatedButton(
@@ -97,7 +105,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
-                    child: Text('Continue', style: AppTextStyles.button),
+                    child: const Text(AppStrings.continueBtn, style: AppTextStyles.button),
                   ),
                   const SizedBox(height: 24),
                   SocialLoginButtons(
@@ -107,16 +115,16 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 24),
                   TextButton(
                     onPressed: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => RegisterScreen()));
+                      Navigator.pushReplacementNamed(context, AppRoutes.register);
                     },
                     child: Text(
-                      "Don't have an account? Sign up",
+                      AppStrings.dontHaveAccount,
                       style: AppTextStyles.bodyLarge.copyWith(color: AppColors.secondary),
                     ),
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'By sign in or sign up, you agree to our Terms of Service and Privacy Policy',
+                    AppStrings.termsAndPrivacy,
                     style: AppTextStyles.bodyMedium.copyWith(fontSize: 10),
                     textAlign: TextAlign.center,
                   ),
@@ -124,11 +132,6 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
           ),
-          if (authProvider.errorMessage != null)
-            ErrorView(
-              message: authProvider.errorMessage!, 
-              onRetry: authProvider.clearError,
-            ),
           if (authProvider.isLoading) const LoadingIndicator(),
         ],
       ),

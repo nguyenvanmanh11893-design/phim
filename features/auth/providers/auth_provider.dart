@@ -75,5 +75,17 @@ class AuthProvider extends ChangeNotifier {
       return false;
     }
   }
+
+  // Thêm vào trong class AuthProvider
+Future<void> logout() async {
+  _setLoading(true);
+  try {
+    await _repository.logout();
+  } catch (e) {
+    print('Lỗi đăng xuất: $e');
+  } finally {
+    _setLoading(false);
+  }
+}
 }
 

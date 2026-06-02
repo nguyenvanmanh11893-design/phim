@@ -11,7 +11,7 @@ class AuthInterceptor extends Interceptor {
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
     final accessToken = await _tokenStorage.getAccessToken();
-    if (accessToken != null) {
+    if (accessToken != null && accessToken.isNotEmpty) {
       options.headers['Authorization'] = 'Bearer $accessToken';
     }
     return handler.next(options);
@@ -30,7 +30,9 @@ class AuthInterceptor extends Interceptor {
             method: err.requestOptions.method,
             headers: err.requestOptions.headers,
           );
-          opts.headers?['Authorization'] = 'Bearer $accessToken';
+          if (accessToken != null && accessToken.isNotEmpty) {
+            opts.headers?['Authorization'] = 'Bearer $accessToken';
+          }
           
           final cloneReq = await _dio.request(
             err.requestOptions.path,
