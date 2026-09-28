@@ -40,7 +40,7 @@ class MySQLReportRepository extends ReportRepositoryInterface {
     const dateFormat = groupBy === "month" ? "%Y-%m" : "%Y-%m-%d";
 
     let query = `
-      SELECT DATE_FORMAT(paid_at, ?) AS date, SUM(amount) AS revenue
+      SELECT DATE_FORMAT(paid_at, ?) AS date, SUM(amount) AS revenue, COUNT(DISTINCT booking_id) AS totalBookings
       FROM payments
       WHERE status = 'SUCCESS'
     `;
@@ -62,12 +62,13 @@ class MySQLReportRepository extends ReportRepositoryInterface {
     return rows.map((row) => ({
       date: row.date,
       revenue: Number(row.revenue || 0),
+      totalBookings: Number(row.totalBookings || 0),
     }));
   }
 
   async getRevenueByMovie({ startDate, endDate }) {
     let query = `
-      SELECT m.id AS movieId, m.title, SUM(p.amount) AS revenue
+      SELECT m.id AS movieId, m.title, SUM(p.amount) AS revenue, COUNT(DISTINCT b.id) AS totalBookings
       FROM payments p
       JOIN bookings b ON p.booking_id = b.id
       JOIN showtimes s ON b.showtime_id = s.id
@@ -93,12 +94,13 @@ class MySQLReportRepository extends ReportRepositoryInterface {
       movieId: row.movieId,
       title: row.title,
       revenue: Number(row.revenue || 0),
+      totalBookings: Number(row.totalBookings || 0),
     }));
   }
 
   async getRevenueByCinema({ startDate, endDate }) {
     let query = `
-      SELECT c.id AS cinemaId, c.name AS cinemaName, SUM(p.amount) AS revenue
+      SELECT c.id AS cinemaId, c.name AS cinemaName, SUM(p.amount) AS revenue, COUNT(DISTINCT b.id) AS totalBookings
       FROM payments p
       JOIN bookings b ON p.booking_id = b.id
       JOIN showtimes s ON b.showtime_id = s.id
@@ -125,6 +127,7 @@ class MySQLReportRepository extends ReportRepositoryInterface {
       cinemaId: row.cinemaId,
       cinemaName: row.cinemaName,
       revenue: Number(row.revenue || 0),
+      totalBookings: Number(row.totalBookings || 0),
     }));
   }
 }

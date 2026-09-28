@@ -13,7 +13,7 @@ class ReportRepositoryInterface {
    * @param {string} params.startDate - Ngày bắt đầu (YYYY-MM-DD)
    * @param {string} params.endDate - Ngày kết thúc (YYYY-MM-DD)
    * @param {string} params.groupBy - 'day' hoặc 'month'
-   * @returns {Promise<Array<{date: string, revenue: number}>>}
+   * @returns {Promise<Array<{date: string, revenue: number, totalBookings: number}>>}
    */
   async getRevenueByTime({ startDate, endDate, groupBy }) {
     throw new Error("Method not implemented.");
@@ -24,7 +24,7 @@ class ReportRepositoryInterface {
    * @param {Object} params
    * @param {string} params.startDate
    * @param {string} params.endDate
-   * @returns {Promise<Array<{movieId: number, title: string, revenue: number}>>}
+   * @returns {Promise<Array<{movieId: number, title: string, revenue: number, totalBookings: number}>>}
    */
   async getRevenueByMovie({ startDate, endDate }) {
     throw new Error("Method not implemented.");
@@ -35,7 +35,7 @@ class ReportRepositoryInterface {
    * @param {Object} params
    * @param {string} params.startDate
    * @param {string} params.endDate
-   * @returns {Promise<Array<{cinemaId: number, cinemaName: string, revenue: number}>>}
+   * @returns {Promise<Array<{cinemaId: number, cinemaName: string, revenue: number, totalBookings: number}>>}
    */
   async getRevenueByCinema({ startDate, endDate }) {
     throw new Error("Method not implemented.");

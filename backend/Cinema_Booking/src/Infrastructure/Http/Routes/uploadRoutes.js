@@ -5,6 +5,8 @@ import UploadController from "../Controllers/UploadController.js";
 import authMiddleware from "../Middlewares/authMiddleware.js";
 import requireRole from "../Middlewares/roleMiddleware.js";
 
+import AppError from "../../../Domain/Errors/AppError.js";
+
 const router = express.Router();
 const uploadController = new UploadController();
 
@@ -12,6 +14,10 @@ const uploadController = new UploadController();
 // Multer throw lỗi riêng, không phải AppError → cần wrap lại để errorMiddleware
 // xử lý đúng format, nếu không Express sẽ trả HTML thay vì JSON
 const handleMulterError = (err, req, res, next) => {
+  if (err instanceof AppError || err.statusCode) {
+    return next(err);
+  }
+
   if (err.code === "LIMIT_FILE_SIZE") {
     return res.status(400).json({
       success: false,
@@ -35,6 +41,16 @@ router.post(
   "/image",
   authMiddleware,
   requireRole("admin"),
+  upload.single("image"),
+  handleMulterError,
+  (req, res, next) => uploadController.uploadImage(req, res, next),
+);
+
+// POST /upload/avatar
+// Bắt buộc đăng nhập (cả user và admin), field "image", tối đa 5MB JPG/PNG/WEBP
+router.post(
+  "/avatar",
+  authMiddleware,
   upload.single("image"),
   handleMulterError,
   (req, res, next) => uploadController.uploadImage(req, res, next),

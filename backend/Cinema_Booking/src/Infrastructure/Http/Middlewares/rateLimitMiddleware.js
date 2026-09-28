@@ -1,9 +1,9 @@
 import rateLimit from "express-rate-limit";
 
-// Giới hạn chung cho toàn bộ API (ví dụ: 100 request / 15 phút)
+// Giới hạn chung cho toàn bộ API (ví dụ: 200 request / 15 phút)
 export const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 phút
-  max: 100,
+  max: 200,
   message: {
     success: false,
     message: "Bạn đã gửi quá nhiều yêu cầu, vui lòng thử lại sau 15 phút.",
@@ -15,7 +15,7 @@ export const globalLimiter = rateLimit({
 // Giới hạn khắt khe cho Auth (ví dụ: 5 lần thử login sai / 1 giờ)
 export const authLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 giờ
-  max: 10, // Tối đa 10 lần đăng ký/đăng nhập
+  max: 30, // Tối đa 30 lần đăng ký/đăng nhập
   message: {
     success: false,
     message:

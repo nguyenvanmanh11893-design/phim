@@ -26,13 +26,23 @@ class ConfirmPaymentHandler {
   }
 
   async execute(command) {
-    const { id, transactionId } = command;
+    const { id, userId, transactionId } = command;
 
     // ── Bước 1: Tìm payment session ───────────────────────────────────
     const payment = await this.paymentRepository.findById(id);
 
     if (!payment) {
       throw new AppError(`Payment với id=${id} không tồn tại`, 404);
+    }
+
+    // ── Bước 1.1: Xác minh quyền sở hữu (payment thuộc về user đăng nhập)
+    if (payment.userId !== userId) {
+      throw new AppError("Bạn không có quyền xác nhận phiên thanh toán này", 403);
+    }
+
+    // ── Bước 1.2: Mock endpoint chỉ xử lý provider MOCK ──────────────
+    if (payment.provider !== "MOCK") {
+      throw new AppError("Chỉ hỗ trợ xác nhận mô phỏng cho provider MOCK", 422);
     }
 
     // ── Bước 2: Kiểm tra payment còn có thể complete không ────────────

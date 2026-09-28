@@ -10,13 +10,23 @@ class FailPaymentHandler {
   }
 
   async execute(command) {
-    const { id } = command;
+    const { id, userId } = command;
 
     // ── Bước 1: Tìm payment session ───────────────────────────────────
     const payment = await this.paymentRepository.findById(id);
 
     if (!payment) {
       throw new AppError(`Payment với id=${id} không tồn tại`, 404);
+    }
+
+    // ── Bước 1.1: Xác minh quyền sở hữu (payment thuộc về user đăng nhập)
+    if (payment.userId !== userId) {
+      throw new AppError("Bạn không có quyền thao tác trên phiên thanh toán này", 403);
+    }
+
+    // ── Bước 1.2: Mock endpoint chỉ xử lý provider MOCK ──────────────
+    if (payment.provider !== "MOCK") {
+      throw new AppError("Chỉ hỗ trợ hủy mô phỏng cho provider MOCK", 422);
     }
 
     // ── Bước 2: Gọi domain method ─────────────────────────────────────

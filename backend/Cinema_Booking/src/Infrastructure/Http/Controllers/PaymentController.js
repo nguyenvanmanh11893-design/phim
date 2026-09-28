@@ -63,6 +63,7 @@ class PaymentController {
 
       const command = new ConfirmPaymentCommand({
         id: Number(req.params.id),
+        userId: req.user.userId,
         transactionId,
       });
 
@@ -80,6 +81,7 @@ class PaymentController {
     try {
       const command = new FailPaymentCommand({
         id: Number(req.params.id),
+        userId: req.user.userId,
       });
 
       const result = await this.failPaymentHandler.execute(command);

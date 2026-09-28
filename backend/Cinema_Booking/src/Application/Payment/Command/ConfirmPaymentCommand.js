@@ -12,10 +12,15 @@ class ConfirmPaymentCommand {
    *   - Mock → controller tự sinh UUID trước khi tạo command
    *   - Thật → lấy từ payload của cổng TT
    */
-  constructor({ id, transactionId }) {
+  constructor({ id, userId, transactionId }) {
     // ── id — payment session cần confirm ──────────────────────────────
     if (!id || !Number.isInteger(Number(id)) || Number(id) <= 0) {
       throw new AppError("id is required and must be a positive integer", 400);
+    }
+
+    // ── userId — bắt buộc từ JWT để verify ownership ──────────────────
+    if (!userId || !Number.isInteger(Number(userId)) || Number(userId) <= 0) {
+      throw new AppError("userId is required and must be a positive integer", 400);
     }
 
     // ── transactionId — bắt buộc, phải do controller truyền vào ───────
@@ -30,6 +35,7 @@ class ConfirmPaymentCommand {
     }
 
     this.id = Number(id);
+    this.userId = Number(userId);
     this.transactionId = transactionId.trim();
   }
 }

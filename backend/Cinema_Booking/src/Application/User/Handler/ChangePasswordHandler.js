@@ -30,7 +30,7 @@ class ChangePasswordHandler {
     );
 
     if (!isOldPasswordValid) {
-      throw new AppError("Mật khẩu cũ không đúng", 401);
+      throw new AppError("Mật khẩu cũ không đúng", 400);
     }
 
     // ── Bước 3: Hash mật khẩu mới ────────────────────────────────────

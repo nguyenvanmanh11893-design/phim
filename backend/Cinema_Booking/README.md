@@ -381,12 +381,12 @@ Ratings được mount dưới dạng nested route của movies: `/movies/:movie
 **Request body — tạo đánh giá:**
 ```json
 {
-  "score": 8,
+  "score": 5,
   "review": "Phim hay, diễn xuất tốt, hiệu ứng hình ảnh đẹp mắt."
 }
 ```
 
-`score` là số nguyên từ **1 đến 10**. `review` là tùy chọn, tối đa 1000 ký tự.
+`score` là số nguyên từ **1 đến 5** (tương ứng 1-5 sao theo validation server). `review` là tùy chọn, tối đa 1000 ký tự.
 
 **Response — danh sách đánh giá:**
 ```json
@@ -582,6 +582,11 @@ PENDING → FAILED   (sau khi fail, hoặc hết hạn session 15 phút)
 
 > Nếu booking đã có payment `PENDING` còn hạn, gọi lại `POST /payments` sẽ trả về session cũ thay vì tạo mới.
 
+> **Quy định bảo mật & phân quyền cho `POST /payments/:id/confirm` và `POST /payments/:id/fail`:**
+> - Cần xác thực Bearer token (`authMiddleware`). `userId` được trích xuất trực tiếp từ JWT của người dùng, không lấy từ request body.
+> - Backend xác minh quyền sở hữu: payment session phải thuộc chính `userId` đang đăng nhập (`payment.userId === req.user.userId`). Nếu không khớp, trả về lỗi `403 Forbidden` (`Bạn không có quyền thao tác trên phiên thanh toán này`).
+> - Chỉ cho phép xử lý mô phỏng đối với payment session có `provider === "MOCK"`. Nếu provider khác (như VNPAY/MOMO thật), trả về lỗi `422 Unprocessable Entity`.
+
 > Khi `confirm` thành công: **payment** (SUCCESS) + **booking** (CONFIRMED) được cập nhật trong cùng 1 database transaction, **vé điện tử** được phát hành tự động, và **email xác nhận** được gửi tới user.
 
 > Khi `fail`, booking vẫn giữ trạng thái `PENDING` — user có thể tạo payment session mới nếu booking chưa hết hold.
@@ -663,13 +668,14 @@ PENDING → FAILED   (sau khi fail, hoặc hết hạn session 15 phút)
 
 | Method | Endpoint | Auth | Mô tả |
 |---|---|---|---|
-| POST | `/upload/image` | 🔐 Admin | Upload ảnh lên Cloudinary |
+| POST | `/upload/image` | 🔐 Admin | Upload ảnh quản trị lên Cloudinary (poster, rạp...) |
+| POST | `/upload/avatar` | ✅ User/Admin | Upload ảnh đại diện cá nhân lên Cloudinary |
 
-**Request:** `multipart/form-data`, field name là `image`.
+**Request cho cả 2 endpoint:** `multipart/form-data`, field name là `image`.
 
 Chấp nhận: `JPG`, `PNG`, `WEBP`. Tối đa **5MB**.
 
-**Response:**
+**Response thành công:**
 ```json
 {
   "success": true,
@@ -680,7 +686,14 @@ Chấp nhận: `JPG`, `PNG`, `WEBP`. Tối đa **5MB**.
 }
 ```
 
-> URL trả về có thể dùng trực tiếp làm `posterUrl` khi tạo/cập nhật phim, hoặc `imageUrl` khi tạo/cập nhật rạp.
+**Mã lỗi phổ biến:**
+- `400 Bad Request`: `Không tìm thấy file ảnh trong request` (thiếu field image hoặc không đính kèm file)
+- `400 Bad Request`: `File quá lớn, tối đa 5MB` (kích thước file vượt quá 5MB)
+- `400 Bad Request`: `Chỉ chấp nhận file ảnh JPG, PNG, WEBP` (sai định dạng mime)
+- `401 Unauthorized`: Chưa đăng nhập hoặc token không hợp lệ / hết hạn
+- `403 Forbidden`: Truy cập `/upload/image` mà không có quyền Admin
+
+> URL trả về từ `/upload/image` có thể dùng làm `posterUrl` hoặc `imageUrl`. URL trả về từ `/upload/avatar` được gửi tiếp sang `PATCH /users/me` với `{ "avatarUrl": data.url }` để cập nhật hồ sơ cá nhân.
 
 ---
 

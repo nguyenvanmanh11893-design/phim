@@ -23,8 +23,8 @@ class UpdateProfileCommand {
     }
 
     if (phone !== undefined && phone !== null) {
-      if (typeof phone !== "string" || !/^\+?[\d\s\-()]{7,20}$/.test(phone)) {
-        throw new AppError("phone không đúng định dạng", 400);
+      if ( typeof phone !== "string" || !/^(0|\+84)(3|5|7|8|9)\d{8}$/.test(phone)) {
+        throw new AppError("Số điện thoại không đúng định dạng", 400);
       }
     }
 
