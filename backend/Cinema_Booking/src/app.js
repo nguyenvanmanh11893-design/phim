@@ -18,6 +18,8 @@ import { globalLimiter } from "./Infrastructure/Http/Middlewares/rateLimitMiddle
 
 const app = express();
 
+app.set('trust proxy', 1);
+
 app.use(
   cors({
     origin: "https://frontendphim-production.up.railway.app", // Thay bằng URL chạy React của bạn (Vite mặc định là 5173)
