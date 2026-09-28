@@ -1,0 +1,211 @@
+.booking-detail-page {
+  padding: var(--space-8) 0 var(--space-16);
+  min-height: calc(100vh - var(--header-height));
+}
+
+.booking-detail-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  padding: var(--space-8);
+  box-shadow: var(--shadow-md);
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.booking-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  padding-bottom: var(--space-6);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.booking-detail-id {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.booking-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.booking-status-badge.pending {
+  background-color: rgba(234, 179, 8, 0.15);
+  color: #facc15;
+  border: 1px solid rgba(234, 179, 8, 0.3);
+}
+
+.booking-status-badge.confirmed {
+  background-color: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.booking-status-badge.cancelled {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* Timer Box */
+.held-timer-banner {
+  margin-top: var(--space-6);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4) var(--space-6);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.held-timer-banner.active {
+  background: linear-gradient(135deg, rgba(234, 179, 8, 0.1) 0%, rgba(229, 57, 53, 0.1) 100%);
+  border: 1px solid rgba(234, 179, 8, 0.4);
+}
+
+.held-timer-banner.expired {
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.timer-digits-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.timer-clock {
+  font-family: monospace;
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #facc15;
+  background-color: rgba(0, 0, 0, 0.4);
+  padding: 4px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(234, 179, 8, 0.3);
+}
+
+.timer-clock.warning {
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.5);
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+/* Info Sections */
+.detail-section-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-6);
+  margin-top: var(--space-6);
+}
+
+@media (min-width: 640px) {
+  .detail-section-grid {
+    grid-template-columns: 120px 1fr;
+  }
+}
+
+.detail-movie-poster {
+  width: 120px;
+  height: 170px;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+  border: 1px solid var(--border-default);
+}
+
+.detail-info-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.detail-info-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  border-bottom: 1px dashed var(--border-subtle);
+  padding-bottom: var(--space-2);
+}
+
+.detail-info-row strong {
+  color: var(--text-primary);
+  text-align: right;
+}
+
+/* Price & Items Section */
+.detail-items-box {
+  margin-top: var(--space-6);
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+}
+
+.detail-items-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: var(--space-4);
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: var(--space-2);
+}
+
+.detail-item-line {
+  display: flex;
+  justify-content: space-between;
+  padding: var(--space-2) 0;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.detail-item-line strong {
+  color: var(--text-primary);
+}
+
+.detail-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 2px solid var(--border-subtle);
+  padding-top: var(--space-4);
+  margin-top: var(--space-4);
+}
+
+.detail-total-price {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--accent);
+}
+
+/* Actions Footer */
+.detail-actions-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin-top: var(--space-8);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--border-subtle);
+}

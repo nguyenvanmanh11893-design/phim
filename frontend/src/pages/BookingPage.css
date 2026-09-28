@@ -1,0 +1,502 @@
+.booking-page {
+  padding-bottom: 120px; /* Space for sticky bottom bar on mobile */
+  min-height: calc(100vh - var(--header-height));
+}
+
+/* Header bar matching ghe.png */
+.booking-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) 0;
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: var(--space-6);
+}
+
+.booking-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 6px 12px;
+  border-radius: var(--radius-md);
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.booking-back-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.booking-page-heading {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  text-align: center;
+  flex-grow: 1;
+}
+
+/* Main Booking Content Grid (Desktop: Left map, Right summary) */
+.booking-layout-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-8);
+}
+
+@media (min-width: 1024px) {
+  .booking-layout-grid {
+    grid-template-columns: 1fr 340px;
+    align-items: start;
+  }
+}
+
+/* Screen Visual Area matching ghe.png */
+.seat-selection-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-x: auto;
+}
+
+.screen-visual-box {
+  width: 100%;
+  max-width: 480px;
+  margin: var(--space-2) auto var(--space-8);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.screen-curve-bar {
+  width: 100%;
+  height: 6px;
+  background: linear-gradient(90deg, transparent 0%, #FFFFFF 50%, transparent 100%);
+  border-radius: 50% 50% 0 0;
+  box-shadow: 0 4px 16px rgba(255, 255, 255, 0.4);
+}
+
+.screen-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--text-secondary);
+  margin-top: 6px;
+  text-transform: uppercase;
+}
+
+/* Seat Grid */
+.seat-map-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: var(--space-4) 0;
+  min-width: min-content;
+}
+
+.seat-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.seat-row-label {
+  width: 24px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.seat-btn {
+  width: 32px;
+  height: 30px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  user-select: none;
+  border: 1px solid transparent;
+}
+
+/* Seat types styled according to CineBooking dark theme */
+.seat-btn.seat-normal {
+  background-color: #2E374D;
+  color: var(--text-primary);
+  border-color: #3B4663;
+}
+
+.seat-btn.seat-normal:hover:not(:disabled) {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.seat-btn.seat-vip {
+  background-color: rgba(239, 68, 68, 0.2);
+  border-color: #EF4444;
+  color: #F87171;
+}
+
+.seat-btn.seat-vip:hover:not(:disabled) {
+  background-color: #EF4444;
+  color: #FFFFFF;
+  transform: translateY(-2px);
+}
+
+.seat-btn.seat-couple {
+  width: 68px; /* Double width for sweetbox */
+  background-color: rgba(236, 72, 153, 0.2);
+  border-color: #EC4899;
+  color: #F472B6;
+}
+
+.seat-btn.seat-couple:hover:not(:disabled) {
+  background-color: #EC4899;
+  color: #FFFFFF;
+  transform: translateY(-2px);
+}
+
+.seat-btn.seat-occupied,
+.seat-btn:disabled {
+  background-color: #1F2430;
+  border-color: #272E3F;
+  color: #4B5563;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.seat-btn.seat-selected {
+  background-color: var(--accent) !important;
+  border-color: var(--accent) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 0 10px var(--accent-glow);
+  transform: scale(1.08);
+}
+
+/* Seat Legend matching ghe.png */
+.seat-legend-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin-top: var(--space-8);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border-subtle);
+  width: 100%;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.legend-swatch {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+}
+
+/* Right Summary Sidebar (Desktop) */
+.booking-summary-sidebar {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  position: sticky;
+  top: calc(var(--header-height) + 16px);
+}
+
+.summary-heading {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: var(--space-3);
+}
+
+.summary-item-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.summary-item-row strong {
+  color: var(--text-primary);
+}
+
+.summary-seats-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-height: 80px;
+  overflow-y: auto;
+}
+
+.seat-tag {
+  background-color: var(--accent-subtle);
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.summary-total-box {
+  border-top: 1px solid var(--border-subtle);
+  padding-top: var(--space-4);
+  margin-top: var(--space-2);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.summary-total-label {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.summary-total-amount {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--accent);
+}
+
+/* Sticky Bottom Bar for Mobile matching ghe.png */
+.booking-sticky-bottom-bar {
+  display: flex;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: var(--bg-card);
+  border-top: 1px solid var(--border-default);
+  padding: 12px 16px;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.6);
+  z-index: 90;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.bottom-bar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: var(--max-content-width);
+  margin: 0 auto;
+  gap: var(--space-4);
+}
+
+.bottom-bar-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.bottom-bar-seats {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+.bottom-bar-price {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--accent);
+}
+
+@media (min-width: 1024px) {
+  .booking-sticky-bottom-bar {
+    display: none;
+  }
+}
+
+/* Combo Section */
+.combo-card-container {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  margin-top: var(--space-6);
+  box-shadow: var(--shadow-sm);
+}
+
+.combo-section-header {
+  margin-bottom: var(--space-4);
+}
+
+.combo-section-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: var(--space-1);
+}
+
+.combo-section-subtitle {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.combo-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+}
+
+@media (min-width: 640px) {
+  .combo-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.combo-item-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  display: flex;
+  gap: var(--space-4);
+  align-items: center;
+  transition: all var(--transition-fast);
+}
+
+.combo-item-card:hover {
+  border-color: var(--border-hover);
+}
+
+.combo-item-card.selected {
+  border-color: var(--accent);
+  background-color: rgba(229, 57, 53, 0.05);
+}
+
+.combo-image-wrapper {
+  width: 72px;
+  height: 72px;
+  border-radius: var(--radius-md);
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  overflow: hidden;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.combo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.combo-img-fallback {
+  font-size: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.combo-details {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.combo-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.combo-desc {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.combo-price-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: var(--space-2);
+}
+
+.combo-price {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.combo-quantity-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 2px 6px;
+}
+
+.qty-btn {
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  font-size: 1.1rem;
+  font-weight: 700;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all var(--transition-fast);
+}
+
+.qty-btn:hover:not(:disabled) {
+  background-color: var(--bg-hover);
+  color: var(--accent);
+}
+
+.qty-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.qty-number {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  min-width: 18px;
+  text-align: center;
+}

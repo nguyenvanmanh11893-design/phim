@@ -1,0 +1,26 @@
+/* Admin Cinemas Page Styles */
+
+.admin-cinemas-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.admin-cinema-thumb {
+  width: 60px;
+  height: 45px;
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-surface);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-subtle);
+  font-size: 1.25rem;
+}
+
+.admin-cinema-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}

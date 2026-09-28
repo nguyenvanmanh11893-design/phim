@@ -1,0 +1,49 @@
+/* Admin Rooms Page Styles */
+
+.admin-rooms-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.admin-breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.admin-breadcrumbs a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.admin-breadcrumbs a:hover {
+  text-decoration: underline;
+}
+
+.admin-breadcrumbs .current-crumb {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.admin-warning-box {
+  background-color: rgba(245, 158, 11, 0.12);
+  border: 1px solid var(--status-warning);
+  color: #fbbf24;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.room-preview-summary {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}

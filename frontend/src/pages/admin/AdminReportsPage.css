@@ -1,0 +1,104 @@
+/* Admin Reports Page Styles */
+
+.admin-reports-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Tabs */
+.reports-tab-nav {
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 0.5rem;
+  overflow-x: auto;
+}
+
+.tab-btn {
+  padding: 0.65rem 1.25rem;
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.tab-btn:hover {
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+}
+
+.tab-btn.active {
+  background-color: var(--accent);
+  color: #fff;
+  box-shadow: 0 4px 12px var(--accent-glow);
+}
+
+.presets-group {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.preset-pill {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  color: var(--text-secondary);
+  padding: 0.35rem 0.65rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.preset-pill:hover {
+  border-color: var(--accent);
+  color: var(--text-primary);
+}
+
+/* Summary Bar */
+.report-summary-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  background-color: var(--bg-card);
+  padding: 1.25rem 1.5rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-subtle);
+}
+
+.report-stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.stat-value {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+/* Revenue Progress Bar */
+.revenue-progress-container {
+  width: 100%;
+  height: 12px;
+  background-color: var(--bg-surface);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.revenue-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #6366f1, var(--accent));
+  border-radius: var(--radius-full);
+  transition: width 0.4s ease-out;
+}

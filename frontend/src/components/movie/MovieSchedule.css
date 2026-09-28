@@ -1,0 +1,223 @@
+.schedule-container {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  margin-top: var(--space-8);
+}
+
+/* Cinema Header Info - matching lich_chieu.png */
+.schedule-cinema-header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: var(--space-6);
+}
+
+.cinema-logo-badge {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.cinema-meta-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cinema-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.cinema-address {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.cinema-map-link {
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin-left: 6px;
+  text-decoration: none;
+}
+
+.cinema-map-link:hover {
+  text-decoration: underline;
+}
+
+/* Date Selector Row - matching lich_chieu.png */
+.date-selector-wrapper {
+  overflow-x: auto;
+  padding-bottom: var(--space-3);
+  margin-bottom: var(--space-6);
+  scrollbar-width: thin;
+}
+
+.date-selector-list {
+  display: flex;
+  gap: var(--space-3);
+  min-width: min-content;
+}
+
+.date-pill-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 72px;
+  padding: 10px 14px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.date-pill-btn:hover {
+  border-color: var(--accent);
+  color: var(--text-primary);
+  background-color: var(--bg-surface-hover);
+}
+
+.date-pill-btn.active {
+  background-color: var(--accent-subtle);
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: 0 0 12px var(--accent-glow);
+}
+
+.date-pill-day {
+  font-size: 1.4rem;
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--text-primary);
+}
+
+.date-pill-btn.active .date-pill-day {
+  color: var(--accent);
+}
+
+.date-pill-label {
+  font-size: 0.78rem;
+  font-weight: 500;
+  margin-top: 4px;
+  white-space: nowrap;
+}
+
+/* Movie & Showtime Area - matching lich_chieu.png */
+.schedule-movie-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-4) 0;
+}
+
+@media (min-width: 640px) {
+  .schedule-movie-row {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: var(--space-6);
+  }
+}
+
+.schedule-movie-poster {
+  width: 110px;
+  flex-shrink: 0;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+
+.schedule-movie-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.schedule-movie-title-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.schedule-movie-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.schedule-movie-genres {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* Format Label (e.g. 2D Phụ đề) */
+.schedule-format-label {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+}
+
+/* Showtime Pill Buttons Grid - matching lich_chieu.png */
+.showtime-buttons-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.showtime-pill-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 12px;
+  background-color: var(--bg-surface);
+  border: 1px solid rgba(59, 130, 246, 0.4);
+  border-radius: var(--radius-md);
+  color: #60A5FA;
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all var(--transition-fast);
+  cursor: pointer;
+  letter-spacing: 0.3px;
+}
+
+.showtime-pill-btn:hover {
+  background-color: var(--accent);
+  border-color: var(--accent);
+  color: #FFFFFF;
+  box-shadow: 0 4px 14px var(--accent-glow);
+  transform: translateY(-2px);
+}
+
+.showtime-room-hint {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-left: 4px;
+}
+
+.showtime-pill-btn:hover .showtime-room-hint {
+  color: rgba(255, 255, 255, 0.8);
+}

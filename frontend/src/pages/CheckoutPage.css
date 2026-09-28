@@ -1,0 +1,416 @@
+.checkout-page {
+  padding: var(--space-6) 0 var(--space-12);
+}
+
+.checkout-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  padding: var(--space-8);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.4);
+}
+
+.checkout-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-4);
+  padding-bottom: var(--space-6);
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: var(--space-6);
+  flex-wrap: wrap;
+}
+
+.checkout-tag {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-primary);
+  margin-bottom: var(--space-1);
+}
+
+.checkout-title {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0 0 var(--space-1);
+}
+
+.checkout-subtitle {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+/* Countdown Badge */
+.checkout-countdown-badge {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  background-color: rgba(234, 179, 8, 0.1);
+  border: 1px solid rgba(234, 179, 8, 0.3);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3) var(--space-4);
+}
+
+.checkout-countdown-badge.urgent {
+  background-color: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.4);
+  animation: pulseWarning 1.5s infinite;
+}
+
+@keyframes pulseWarning {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.75; }
+}
+
+.countdown-icon {
+  font-size: 1.4rem;
+}
+
+.countdown-label {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+.countdown-time {
+  font-family: monospace;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #facc15;
+}
+
+.checkout-countdown-badge.urgent .countdown-time {
+  color: #f87171;
+}
+
+/* Alerts */
+.checkout-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-6);
+  font-size: 0.9rem;
+}
+
+.checkout-alert.expired {
+  background-color: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: #fca5a5;
+}
+
+.checkout-alert.error {
+  background-color: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: #fca5a5;
+}
+
+.checkout-alert.warning {
+  background-color: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: #fde68a;
+}
+
+.checkout-alert p {
+  margin: var(--space-1) 0 0;
+  font-size: 0.85rem;
+}
+
+.alert-icon {
+  font-size: 1.2rem;
+}
+
+/* Grid Layout */
+.checkout-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: var(--space-8);
+}
+
+@media (max-width: 860px) {
+  .checkout-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.section-heading {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 var(--space-4);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+/* Left Column: Movie & Items */
+.checkout-movie-card {
+  display: flex;
+  gap: var(--space-4);
+  background-color: var(--bg-surface);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.checkout-poster-img {
+  width: 80px;
+  height: 115px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+
+.checkout-poster-placeholder {
+  width: 80px;
+  height: 115px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-card);
+  border-radius: var(--radius-sm);
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.checkout-movie-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 var(--space-2);
+}
+
+.checkout-meta-line {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-1);
+}
+
+.checkout-meta-line strong {
+  color: var(--text-primary);
+}
+
+/* Items Box */
+.checkout-items-box {
+  background-color: var(--bg-surface);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+}
+
+.checkout-items-group {
+  margin-bottom: var(--space-3);
+}
+
+.checkout-items-group.border-top {
+  border-top: 1px dashed var(--border-subtle);
+  padding-top: var(--space-3);
+}
+
+.items-group-label {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-bottom: var(--space-2);
+}
+
+.checkout-item-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-1);
+}
+
+.checkout-item-row strong {
+  color: var(--text-primary);
+}
+
+.checkout-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 2px solid var(--border-subtle);
+  padding-top: var(--space-4);
+  margin-top: var(--space-4);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.checkout-total-amount {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--color-primary);
+}
+
+/* Right Column: Mock Sandbox */
+.mock-payment-box {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+}
+
+.mock-provider-badge {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 0.85rem;
+  color: #60a5fa;
+  margin-bottom: var(--space-4);
+  letter-spacing: 0.05em;
+}
+
+.mock-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  background-color: rgba(59, 130, 246, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-5);
+  font-size: 0.85rem;
+  color: #bfdbfe;
+}
+
+.mock-notice strong {
+  display: block;
+  color: #93c5fd;
+  margin-bottom: 2px;
+}
+
+.mock-notice p {
+  margin: 0;
+  line-height: 1.4;
+}
+
+.mock-session-info {
+  background-color: var(--bg-card);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-6);
+  font-size: 0.85rem;
+}
+
+.session-info-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-1) 0;
+  color: var(--text-secondary);
+}
+
+.session-info-line code {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.payment-status-tag {
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.payment-status-tag.pending {
+  background-color: rgba(234, 179, 8, 0.15);
+  color: #facc15;
+}
+
+.payment-status-tag.success {
+  background-color: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+}
+
+.payment-status-tag.failed {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+}
+
+.mock-buttons-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.mock-btn {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  font-size: 0.95rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
+.mock-btn.success-btn {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border: none;
+  color: #ffffff;
+}
+
+.mock-btn.success-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+}
+
+.mock-btn.fail-btn {
+  background-color: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #f87171;
+}
+
+.mock-btn.fail-btn:hover:not(:disabled) {
+  background-color: rgba(239, 68, 68, 0.2);
+}
+
+.retry-session-box,
+.expired-actions-box {
+  text-align: center;
+  padding: var(--space-4);
+  background-color: var(--bg-card);
+  border-radius: var(--radius-md);
+}
+
+.checkout-back-link {
+  margin-top: var(--space-4);
+  text-align: center;
+}
+
+.checkout-back-link a {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+.checkout-back-link a:hover {
+  color: var(--text-primary);
+  text-decoration: underline;
+}
+
+/* Fallback card states */
+.confirmed-state,
+.cancelled-state {
+  text-align: center;
+  padding: var(--space-12) var(--space-6);
+}
+
+.checkout-status-icon {
+  font-size: 3rem;
+  margin-bottom: var(--space-4);
+}
+
+.checkout-desc {
+  max-width: 500px;
+  margin: var(--space-2) auto 0;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
