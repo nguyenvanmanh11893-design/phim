@@ -20,7 +20,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: "http://localhost:5174", // Thay bằng URL chạy React của bạn (Vite mặc định là 5173)
+    origin: process.env.FRONTEND_URL, // Thay bằng URL chạy React của bạn (Vite mặc định là 5173)
     credentials: true, // RẤT QUAN TRỌNG: Cho phép đính kèm token/cookie từ frontend gửi xuống
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"], // Các method HTTP được phép
     allowedHeaders: ["Content-Type", "Authorization"], // Chấp nhận các header này
