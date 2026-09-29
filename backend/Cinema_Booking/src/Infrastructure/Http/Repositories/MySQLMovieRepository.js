@@ -73,7 +73,8 @@ class MySQLMovieRepository extends MovieRepositoryInterface {
        ${whereClause}
        ORDER BY created_at DESC
        LIMIT ? OFFSET ?`,
-      [...params, limit, offset],
+      // mysql2 sends JS numbers as DOUBLE; string binds work with integer LIMIT/OFFSET on MySQL.
+      [...params, String(limit), String(offset)],
     );
 
     // ── Query đếm tổng để tính totalPages ─────────────────────────────
@@ -235,7 +236,7 @@ class MySQLMovieRepository extends MovieRepositoryInterface {
       LIMIT ?
     `;
 
-    const [rows] = await this.pool.execute(query, [Number(limit)]);
+    const [rows] = await this.pool.execute(query, [String(Number(limit))]);
 
     // Vẫn trả về Entity Movie theo chuẩn DDD bằng helper #toEntity đã có
     return rows.map((row) => this.#toEntity(row));

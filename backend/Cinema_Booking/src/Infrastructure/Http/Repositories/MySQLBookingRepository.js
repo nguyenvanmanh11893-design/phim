@@ -80,7 +80,7 @@ class MySQLBookingRepository extends BookingRepositoryInterface {
      ${whereClause}
      ORDER BY created_at DESC
      LIMIT ? OFFSET ?`,
-      [...params, limit, offset],
+      [...params, String(limit), String(offset)],
     );
 
     const [[{ total }]] = await this.pool.execute(
@@ -122,7 +122,7 @@ class MySQLBookingRepository extends BookingRepositoryInterface {
        ${whereClause}
        ORDER BY created_at DESC
        LIMIT ? OFFSET ?`,
-      [...params, limit, offset],
+      [...params, String(limit), String(offset)],
     );
 
     const [[{ total }]] = await this.pool.execute(

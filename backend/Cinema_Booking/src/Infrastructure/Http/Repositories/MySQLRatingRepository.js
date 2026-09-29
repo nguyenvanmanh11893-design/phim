@@ -58,7 +58,7 @@ class MySQLRatingRepository extends RatingRepositoryInterface {
        WHERE r.movie_id = ?
        ORDER BY r.created_at DESC
        LIMIT ? OFFSET ?`,
-      [movieId, limit, offset],
+      [movieId, String(limit), String(offset)],
     );
 
     const [[{ total }]] = await this.pool.execute(
