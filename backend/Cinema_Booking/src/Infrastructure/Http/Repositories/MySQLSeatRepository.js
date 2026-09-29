@@ -11,10 +11,10 @@ class MySQLSeatRepository extends SeatRepositoryInterface {
   // Sắp xếp theo row ASC, number ASC để vẽ sơ đồ ghế đúng thứ tự
   async findByRoomId(roomId) {
     const [rows] = await this.pool.execute(
-      `SELECT id, room_id, row, number, type, is_active, created_at
+      `SELECT id, room_id, \`row\`, number, type, is_active, created_at
        FROM seats
        WHERE room_id = ?
-       ORDER BY row ASC, number ASC`,
+       ORDER BY \`row\` ASC, number ASC`,
       [roomId],
     );
 
@@ -26,7 +26,7 @@ class MySQLSeatRepository extends SeatRepositoryInterface {
   // seatId của phòng khác vào
   async findByIdAndRoomId(id, roomId) {
     const [rows] = await this.pool.execute(
-      `SELECT id, room_id, row, number, type, is_active, created_at
+      `SELECT id, room_id, \`row\`, number, type, is_active, created_at
        FROM seats
        WHERE id = ? AND room_id = ?
        LIMIT 1`,
@@ -54,7 +54,7 @@ class MySQLSeatRepository extends SeatRepositoryInterface {
     });
 
     const [result] = await this.pool.execute(
-      `INSERT INTO seats (room_id, row, number, type, is_active, created_at)
+      `INSERT INTO seats (room_id, \`row\`, number, type, is_active, created_at)
        VALUES ${placeholders}`,
       values,
     );
@@ -122,7 +122,7 @@ class MySQLSeatRepository extends SeatRepositoryInterface {
 
   async findById(id) {
     const [rows] = await this.pool.execute(
-      `SELECT id, room_id, row, number, type, is_active, created_at
+      `SELECT id, room_id, \`row\`, number, type, is_active, created_at
      FROM seats
      WHERE id = ?
      LIMIT 1`,
