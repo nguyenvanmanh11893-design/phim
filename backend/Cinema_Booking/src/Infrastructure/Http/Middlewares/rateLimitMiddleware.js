@@ -4,6 +4,7 @@ import rateLimit from "express-rate-limit";
 export const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 phút
   max: 200,
+  skip: (req) => req.method === "GET" && req.path === "/payments/vnpay/ipn",
   message: {
     success: false,
     message: "Bạn đã gửi quá nhiều yêu cầu, vui lòng thử lại sau 15 phút.",

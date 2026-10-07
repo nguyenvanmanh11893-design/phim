@@ -25,7 +25,7 @@ class InitiatePaymentCommand {
       );
     }
 
-    // ── provider — optional, mặc định MOCK ────────────────────────────
+    // ── provider — optional, mặc định VNPAY ────────────────────────────
     if (provider !== undefined && !ALLOWED_PROVIDERS.includes(provider)) {
       throw new AppError(
         `provider must be one of: ${ALLOWED_PROVIDERS.join(", ")}`,
@@ -35,7 +35,7 @@ class InitiatePaymentCommand {
 
     this.bookingId = Number(bookingId);
     this.userId = Number(userId);
-    this.provider = provider ?? "MOCK";
+    this.provider = provider ?? "VNPAY";
   }
 }
 

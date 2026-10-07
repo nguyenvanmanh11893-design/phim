@@ -12,7 +12,8 @@ class MySQLPaymentRepository extends PaymentRepositoryInterface {
   async findById(id) {
     const [rows] = await this.pool.execute(
       `SELECT id, booking_id, user_id, amount, status, provider,
-              transaction_id, expired_at, paid_at, created_at
+              transaction_id, expired_at, paid_at, created_at,
+              gateway_response_code, gateway_transaction_status, review_reason, gateway_processed_at
        FROM payments
        WHERE id = ?
        LIMIT 1`,
@@ -28,7 +29,8 @@ class MySQLPaymentRepository extends PaymentRepositoryInterface {
   async findByIdAndUserId(id, userId) {
     const [rows] = await this.pool.execute(
       `SELECT id, booking_id, user_id, amount, status, provider,
-              transaction_id, expired_at, paid_at, created_at
+              transaction_id, expired_at, paid_at, created_at,
+              gateway_response_code, gateway_transaction_status, review_reason, gateway_processed_at
        FROM payments
        WHERE id = ? AND user_id = ?
        LIMIT 1`,
@@ -46,7 +48,8 @@ class MySQLPaymentRepository extends PaymentRepositoryInterface {
   async findActiveByBookingId(bookingId) {
     const [rows] = await this.pool.execute(
       `SELECT id, booking_id, user_id, amount, status, provider,
-              transaction_id, expired_at, paid_at, created_at
+              transaction_id, expired_at, paid_at, created_at,
+              gateway_response_code, gateway_transaction_status, review_reason, gateway_processed_at
        FROM payments
        WHERE booking_id = ?
          AND status     = 'PENDING'

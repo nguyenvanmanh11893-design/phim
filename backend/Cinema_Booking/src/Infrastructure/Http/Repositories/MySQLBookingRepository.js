@@ -1,4 +1,5 @@
 // src/Infrastructure/Http/Repositories/MySQLBookingRepository.js
+import AppError from "../../../Domain/Errors/AppError.js";
 import BookingRepositoryInterface from "../../../Domain/Booking/Repository/BookingRepositoryInterface.js";
 import Booking from "../../../Domain/Booking/Entity/Booking.js";
 import BookingSeat from "../../../Domain/Booking/Entity/BookingSeat.js";
@@ -173,6 +174,15 @@ class MySQLBookingRepository extends BookingRepositoryInterface {
     try {
       await conn.beginTransaction();
 
+      const [[lockedShowtime]] = await conn.execute("SELECT CASE WHEN cancelled_at IS NOT NULL THEN 'CANCELLED' WHEN start_time > NOW() THEN 'SCHEDULED' ELSE 'UNAVAILABLE' END AS status FROM showtimes WHERE id = ? FOR UPDATE", [booking.showtimeId]);
+      if (!lockedShowtime || lockedShowtime.status !== "SCHEDULED") throw new AppError("Suất chiếu không còn khả dụng", 422);
+      const [occupied] = await conn.execute(`SELECT bs.seat_id FROM booking_seats bs
+        JOIN bookings b ON b.id = bs.booking_id WHERE b.showtime_id = ?
+        AND (b.status = 'CONFIRMED' OR (b.status = 'PENDING' AND b.held_until > NOW()))`, [booking.showtimeId]);
+      if (occupied.some((row) => booking.seatIds.includes(Number(row.seat_id)))) {
+        throw new AppError("Ghế đã được đặt hoặc đang được giữ", 409);
+      }
+
       // ── Bước 1: Insert booking ───────────────────────────────────────
       const {
         user_id,
@@ -296,12 +306,12 @@ class MySQLBookingRepository extends BookingRepositoryInterface {
        SET status       = ?,
            confirmed_at = ?,
            cancelled_at = ?
-       WHERE id = ?`,
+       WHERE id = ? AND status = 'PENDING'`,
       [status, confirmed_at, cancelled_at, booking.id],
     );
 
     if (result.affectedRows === 0) {
-      throw new Error(`Booking với id=${booking.id} không tồn tại`);
+      throw new AppError("Booking đã thay đổi trạng thái, vui lòng tải lại", 409);
     }
 
     return booking;
@@ -374,12 +384,12 @@ class MySQLBookingRepository extends BookingRepositoryInterface {
      SET status       = ?,
          confirmed_at = ?,
          cancelled_at = ?
-     WHERE id = ?`,
+     WHERE id = ? AND status = 'PENDING'`,
       [status, confirmed_at, cancelled_at, booking.id],
     );
 
     if (result.affectedRows === 0) {
-      throw new Error(`Booking với id=${booking.id} không tồn tại`);
+      throw new AppError("Booking đã thay đổi trạng thái, vui lòng tải lại", 409);
     }
 
     return booking;
