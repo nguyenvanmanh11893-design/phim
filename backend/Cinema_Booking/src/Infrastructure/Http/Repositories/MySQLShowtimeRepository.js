@@ -159,7 +159,7 @@ class MySQLShowtimeRepository extends ShowtimeRepositoryInterface {
        ${whereClause}
        ORDER BY s.start_time ASC
        LIMIT ? OFFSET ?`,
-      [...params, limit, offset],
+      [...params, String(limit), String(offset)],
     );
 
     // ── Query đếm tổng ────────────────────────────────────────────────

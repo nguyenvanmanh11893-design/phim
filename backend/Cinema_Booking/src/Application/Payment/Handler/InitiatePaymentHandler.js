@@ -7,13 +7,24 @@ class InitiatePaymentHandler {
    * @param {import('../../../Domain/Booking/Repository/BookingRepositoryInterface.js').default}  bookingRepository
    * @param {import('../../../Domain/Payment/Repository/PaymentRepositoryInterface.js').default}  paymentRepository
    */
-  constructor(bookingRepository, paymentRepository) {
+  constructor(bookingRepository, paymentRepository, vnpayService, vnpayRepository, config) {
     this.bookingRepository = bookingRepository;
     this.paymentRepository = paymentRepository;
+    this.vnpayService = vnpayService;
+    this.vnpayRepository = vnpayRepository;
+    this.config = config;
   }
 
-  async execute(command) {
+  async execute(command, clientIp) {
     const { bookingId, userId, provider } = command;
+    if (provider === "VNPAY") {
+      this.vnpayService.assertConfigured();
+      const payment = await this.vnpayRepository.createSession(bookingId, userId);
+      return { ...payment.toJSON(), paymentUrl: this.vnpayService.createPaymentUrl(payment, clientIp),
+        instructions: "Chuyển trình duyệt đến paymentUrl để thanh toán VNPay Sandbox" };
+    }
+    if (provider !== "MOCK") throw new AppError("Nhà cung cấp thanh toán chưa được hỗ trợ", 400);
+    if (!this.config.PAYMENT_MOCK_ENABLED) throw new AppError("Thanh toán MOCK đã bị tắt", 403);
 
     // ── Bước 1: Verify booking tồn tại và thuộc đúng user ─────────────
     // findByIdAndUserId() trả về null nếu không tồn tại hoặc sai owner
@@ -50,6 +61,9 @@ class InitiatePaymentHandler {
     const existingPayment =
       await this.paymentRepository.findActiveByBookingId(bookingId);
 
+    if (existingPayment && existingPayment.provider !== provider) {
+      throw new AppError("Booking đang có phiên thanh toán của nhà cung cấp khác", 409);
+    }
     if (existingPayment) {
       return this.#buildResponse(existingPayment);
     }
@@ -66,6 +80,8 @@ class InitiatePaymentHandler {
     } catch (err) {
       throw new AppError(err.message, 422);
     }
+
+    payment.expiredAt = new Date(Math.min(payment.expiredAt.getTime(), booking.heldUntil.getTime()));
 
     // ── Bước 5: Lưu vào DB ────────────────────────────────────────────
     const savedPayment = await this.paymentRepository.save(payment);

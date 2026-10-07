@@ -1,4 +1,5 @@
 // src/Infrastructure/Http/Repositories/MySQLTicketRepository.js
+import AppError from "../../../Domain/Errors/AppError.js";
 import TicketRepositoryInterface from "../../../Domain/Ticket/Repository/TicketRepositoryInterface.js";
 import Ticket from "../../../Domain/Ticket/Entity/Ticket.js";
 
@@ -10,7 +11,7 @@ class MySQLTicketRepository extends TicketRepositoryInterface {
 
   // ── Lưu vé mới ──────────────────────────────────────────────────────
   // Dùng trong IssueTicketHandler sau khi payment thành công
-  async save(ticket) {
+  async save(ticket, executor = this.pool) {
     const {
       booking_id,
       user_id,
@@ -21,7 +22,7 @@ class MySQLTicketRepository extends TicketRepositoryInterface {
       issued_at,
     } = ticket.toPersistence();
 
-    const [result] = await this.pool.execute(
+    const [result] = await executor.execute(
       `INSERT INTO tickets 
         (booking_id, user_id, showtime_id, qr_code, is_used, used_at, issued_at)
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
@@ -38,6 +39,34 @@ class MySQLTicketRepository extends TicketRepositoryInterface {
       used_at,
       issued_at,
     });
+  }
+
+  async issueForConfirmedBooking(bookingId, userId, createTicket) {
+    const conn = await this.pool.getConnection();
+    try {
+      await conn.beginTransaction();
+      const [[booking]] = await conn.execute("SELECT * FROM bookings WHERE id = ? AND user_id = ? FOR UPDATE", [bookingId, userId]);
+      if (!booking) throw new AppError("Không tìm thấy booking", 404);
+      if (booking.status !== "CONFIRMED") throw new AppError("Booking chưa được xác nhận thanh toán", 422);
+      const [[paid]] = await conn.execute("SELECT id, provider FROM payments WHERE booking_id = ? AND status = 'SUCCESS' AND review_reason IS NULL ORDER BY id LIMIT 1", [bookingId]);
+      if (!paid) throw new AppError("Booking chưa có thanh toán hợp lệ", 422);
+      const [[existing]] = await conn.execute("SELECT * FROM tickets WHERE booking_id = ? LIMIT 1 FOR UPDATE", [bookingId]);
+      const ticket = existing ? Ticket.fromPersistence(existing) : await this.save(createTicket(booking), conn);
+      await conn.commit();
+      return { ticket, created: !existing, provider: paid.provider };
+    } catch (error) {
+      await conn.rollback();
+      throw error;
+    } finally { conn.release(); }
+  }
+
+  async findMissingPaidTickets(afterId = 0) {
+    const [rows] = await this.pool.execute(`SELECT b.id, b.user_id FROM bookings b
+      WHERE b.status = 'CONFIRMED' AND b.id > ?
+      AND EXISTS (SELECT 1 FROM payments p WHERE p.booking_id = b.id AND p.status = 'SUCCESS' AND p.review_reason IS NULL)
+      AND NOT EXISTS (SELECT 1 FROM tickets t WHERE t.booking_id = b.id)
+      ORDER BY b.id LIMIT 25`, [afterId]);
+    return rows;
   }
 
   // ── Tìm vé theo bookingId ───────────────────────────────────────────

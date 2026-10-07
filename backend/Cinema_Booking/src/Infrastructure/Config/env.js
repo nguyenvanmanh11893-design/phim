@@ -2,6 +2,14 @@ import "dotenv/config";
 
 export const env = {
   PORT: process.env.PORT || 3000,
+  PAYMENT_DEFAULT_PROVIDER: process.env.PAYMENT_DEFAULT_PROVIDER || "VNPAY",
+  PAYMENT_MOCK_ENABLED: process.env.NODE_ENV !== "production" && process.env.PAYMENT_MOCK_ENABLED === "true",
+  VNPAY_TMN_CODE: process.env.VNPAY_TMN_CODE,
+  VNPAY_HASH_SECRET: process.env.VNPAY_HASH_SECRET,
+  VNPAY_URL: process.env.VNPAY_URL || "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html",
+  VNPAY_RETURN_URL: process.env.VNPAY_RETURN_URL,
+  FRONTEND_URL: process.env.FRONTEND_URL,
+  VNPAY_FRONTEND_RETURN_PATH: process.env.VNPAY_FRONTEND_RETURN_PATH || "/payment-result",
   MYSQL_HOST: process.env.MYSQL_HOST,
   MYSQL_PORT: process.env.MYSQL_PORT,
   MYSQL_USER: process.env.MYSQL_USER,

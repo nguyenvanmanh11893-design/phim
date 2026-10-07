@@ -1,5 +1,10 @@
 // Infrastructure/Config/container.js
 import { pool } from "./database.js";
+import { env } from "./env.js";
+import VnpayService from "../Http/Services/VnpayService.js";
+import MySQLVnpayRepository from "../Http/Repositories/MySQLVnpayRepository.js";
+import ProcessVnpayHandler from "../../Application/Payment/Handler/ProcessVnpayHandler.js";
+import { startTicketRecovery } from "../Http/Services/TicketRecoveryService.js";
 
 import NodemailerService from "../Http/Services/NodemailerService.js";
 
@@ -212,9 +217,15 @@ const confirmBookingHandler = new ConfirmBookingHandler(
   showtimeRepository,
 );
 
+const vnpayService = new VnpayService(env);
+const vnpayRepository = new MySQLVnpayRepository(pool);
+
 const initiatePaymentHandler = new InitiatePaymentHandler(
   bookingRepository,
   paymentRepository,
+  vnpayService,
+  vnpayRepository,
+  env,
 );
 const failPaymentHandler = new FailPaymentHandler(paymentRepository);
 const getPaymentHandler = new GetPaymentHandler(paymentRepository);
@@ -222,8 +233,13 @@ const getPaymentHandler = new GetPaymentHandler(paymentRepository);
 const issueTicketHandler = new IssueTicketHandler(
   bookingRepository,
   ticketRepository,
+  showtimeRepository,
+  userRepository,
+  emailService,
 );
-const getTicketHandler = new GetTicketHandler(ticketRepository);
+const getTicketHandler = new GetTicketHandler(ticketRepository, issueTicketHandler);
+const processVnpayHandler = new ProcessVnpayHandler(vnpayService, vnpayRepository, issueTicketHandler);
+export const startPaymentRecovery = () => startTicketRecovery(ticketRepository, issueTicketHandler);
 
 const confirmPaymentHandler = new ConfirmPaymentHandler(
   paymentRepository,
@@ -323,6 +339,10 @@ const paymentController = new PaymentController(
   confirmPaymentHandler,
   failPaymentHandler,
   getPaymentHandler,
+  processVnpayHandler,
+  vnpayService,
+  vnpayRepository,
+  env,
 );
 
 const ticketController = new TicketController(getTicketHandler);

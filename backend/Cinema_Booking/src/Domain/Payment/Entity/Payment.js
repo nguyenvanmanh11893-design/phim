@@ -51,7 +51,12 @@ class Payment {
     expiredAt,
     paidAt,
     createdAt,
+    gatewayResponseCode = null, gatewayTransactionStatus = null, reviewReason = null, gatewayProcessedAt = null,
   }) {
+    this.gatewayResponseCode = gatewayResponseCode;
+    this.gatewayTransactionStatus = gatewayTransactionStatus;
+    this.reviewReason = reviewReason;
+    this.gatewayProcessedAt = gatewayProcessedAt;
     this.id = id ?? null;
     this.bookingId = bookingId;
     this.userId = userId;
@@ -193,8 +198,13 @@ class Payment {
     expired_at,
     paid_at,
     created_at,
+    gateway_response_code, gateway_transaction_status, review_reason, gateway_processed_at,
   }) {
     return new Payment({
+      gatewayResponseCode: gateway_response_code ?? null,
+      gatewayTransactionStatus: gateway_transaction_status ?? null,
+      reviewReason: review_reason ?? null,
+      gatewayProcessedAt: gateway_processed_at ?? null,
       id: Number(id),
       bookingId: Number(booking_id),
       userId: Number(user_id),
@@ -212,6 +222,11 @@ class Payment {
 
   toJSON() {
     return {
+      gatewayResponseCode: this.gatewayResponseCode,
+      gatewayTransactionStatus: this.gatewayTransactionStatus,
+      reviewRequired: Boolean(this.reviewReason),
+      reviewReason: this.reviewReason,
+      gatewayProcessedAt: this.gatewayProcessedAt,
       id: this.id,
       bookingId: this.bookingId,
       userId: this.userId,

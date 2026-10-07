@@ -510,7 +510,7 @@ Combo có thể được thêm vào booking khi đặt vé bằng cách truyền
 | GET | `/bookings/all` | 🔐 Admin | Tất cả booking (filter: `status`, `userId`) |
 | GET | `/bookings/:id` | ✅ | Chi tiết booking (kèm showtime, movie, seats, combos) |
 | POST | `/bookings` | ✅ | Đặt vé — giữ ghế 10 phút |
-| PATCH | `/bookings/:id/confirm` | ✅ | Xác nhận thanh toán trực tiếp |
+| PATCH | `/bookings/:id/confirm` | ✅ | Đã tắt, trả 409; xác nhận qua thanh toán |
 | PATCH | `/bookings/:id/cancel` | ✅ | Hủy booking |
 
 **Request body — đặt vé (kèm combo):**
@@ -538,60 +538,139 @@ Combo có thể được thêm vào booking khi đặt vé bằng cách truyền
 
 ---
 
-### Payments
+### Payments — VNPay Sandbox
 
 | Method | Endpoint | Auth | Mô tả |
 |---|---|---|---|
-| POST | `/payments` | ✅ | Khởi tạo payment session cho booking |
-| GET | `/payments/:id` | ✅ | Xem trạng thái payment |
-| POST | `/payments/:id/confirm` | ✅ | Mock: giả lập thanh toán thành công |
-| POST | `/payments/:id/fail` | ✅ | Mock: giả lập user hủy / cổng TT lỗi |
+| POST | `/payments` | Bearer JWT | Tạo hoặc lấy lại phiên thanh toán VNPay |
+| GET | `/payments/:id` | Bearer JWT, chủ payment | Đọc trạng thái đã lưu trong database |
+| GET | `/payments/vnpay/ipn` | Chữ ký VNPay, không JWT | Nhận kết quả thanh toán và cập nhật booking |
+| GET | `/payments/vnpay/return` | Chữ ký VNPay, không JWT | Nhận trình duyệt quay lại, không cập nhật thanh toán |
+| GET | `/payments/review-required?page=1&limit=20` | Bearer JWT, admin | Liệt kê giao dịch cần đối soát |
+| POST | `/payments/:id/confirm` | Bearer JWT, chỉ MOCK khi được bật | Xác nhận giả lập trong môi trường phát triển |
+| POST | `/payments/:id/fail` | Bearer JWT, chỉ MOCK khi được bật | Hủy giả lập trong môi trường phát triển |
 
-**Request body — khởi tạo payment:**
+**Cấu hình Railway trước khi triển khai:**
+
+1. Đăng ký [VNPay Sandbox](https://sandbox.vnpayment.vn/devreg/) để nhận mã merchant và khóa bí mật.
+2. Sao lưu database, chạy `npm run migrate:vnpay` trong thư mục backend với cấu hình MYSQL của database cần nâng cấp. Lệnh có thể chạy lại; thêm bốn cột đối soát và unique index `tickets(booking_id)`. Nếu có vé trùng booking, lệnh dừng trước khi sửa schema để bạn kiểm tra thủ công; không tự xóa vé. Không import lại `schema.sql` vào database đang chạy.
+3. Thêm các biến backend sau vào Railway Variables:
+
+```env
+NODE_ENV=production
+PAYMENT_DEFAULT_PROVIDER=VNPAY
+PAYMENT_MOCK_ENABLED=false
+VNPAY_TMN_CODE=<merchant-sandbox>
+VNPAY_HASH_SECRET=<secret-sandbox>
+VNPAY_URL=https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
+VNPAY_RETURN_URL=https://<backend-domain>/payments/vnpay/return
+FRONTEND_URL=
+VNPAY_FRONTEND_RETURN_PATH=/payment-result
+```
+
+4. Đăng ký/cấu hình IPN phía VNPay: `https://<backend-domain>/payments/vnpay/ipn`. URL phải có HTTPS và được VNPay truy cập công khai. Đây không phải tham số thêm vào URL thanh toán.
+5. Khi frontend có trang kết quả, cấu hình `FRONTEND_URL=https://<frontend-domain>`. Hiện frontend chưa sửa nên có thể để trống: Return trả JSON `PROCESSING` thay vì redirect vào trang chưa tồn tại.
+6. Backend và MySQL cần thống nhất cách lưu/đọc DATETIME và đồng bộ đồng hồ. Trên Railway thường dùng UTC; không tự đổi quy ước của database cũ. Service VNPay chuyển các Date sang GMT+7 khi gửi gateway.
+
+Khóa bí mật chỉ ở backend, không commit `.env`, không dùng biến `VITE_*`. Chưa cấu hình VNPay thì tạo payment trả `503`; IPN trả `RspCode: "99"`. Không tự chạy migration khi server khởi động.
+
+**Request — tạo payment:**
+
 ```json
 {
   "bookingId": 10,
-  "provider": "MOCK"
+  "provider": "VNPAY"
 }
 ```
 
-`provider` chấp nhận: `MOCK` | `VNPAY` | `MOMO`. Mặc định là `MOCK`.
+`provider` mặc định lấy từ `PAYMENT_DEFAULT_PROVIDER`, mặc định hệ thống là `VNPAY`. `MOMO` chưa được tích hợp và bị từ chối. MOCK mặc định tắt, chỉ bật được khi `NODE_ENV != production` và `PAYMENT_MOCK_ENABLED=true`; production luôn chặn cả tạo MOCK lẫn hai endpoint giả lập.
 
-**Response — khởi tạo payment:**
+Backend kiểm tra quyền sở hữu booking, trạng thái PENDING, hạn giữ ghế và suất chiếu. Số tiền lấy từ database, không nhận `amount` từ frontend. Một booking chỉ dùng lại phiên VNPAY PENDING còn hạn của chính nó. Phiên MOCK cũ bị đánh dấu FAILED khi tạo phiên VNPAY; không tái sử dụng nhầm provider.
+
+**Response — HTTP 201:**
+
 ```json
 {
   "success": true,
   "data": {
     "id": 3,
     "bookingId": 10,
+    "userId": 7,
     "amount": 180000,
     "status": "PENDING",
-    "provider": "MOCK",
-    "expiredAt": "2025-12-25T19:15:00.000Z",
-    "paymentUrl": "/payments/3/mock-checkout",
-    "instructions": "Gọi POST /payments/3/confirm để giả lập thanh toán thành công"
+    "provider": "VNPAY",
+    "transactionId": null,
+    "createdAt": "2026-10-05T03:00:00.000Z",
+    "expiredAt": "2026-10-05T03:10:00.000Z",
+    "paidAt": null,
+    "gatewayResponseCode": null,
+    "gatewayTransactionStatus": null,
+    "gatewayProcessedAt": null,
+    "reviewRequired": false,
+    "reviewReason": null,
+    "paymentUrl": "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html?vnp_...&vnp_SecureHash=...",
+    "instructions": "Chuyển trình duyệt đến paymentUrl để thanh toán VNPay Sandbox"
   }
 }
 ```
 
-**Payment status flow:**
+Frontend chuyển toàn bộ trình duyệt đến `paymentUrl`, không dùng axios/fetch để tải trang gateway. `vnp_TxnRef` là payment ID duy nhất; retry sau FAILED có ID mới. `vnp_Amount = amount * 100`. URL ký HMAC-SHA512 trên tham số đã sắp xếp và encode theo VNPay. `vnp_ExpireDate` bằng thời điểm hết giữ ghế còn lại, không cộng thêm 15 phút.
+
+**IPN — query string VNPay gửi:** `vnp_TmnCode`, `vnp_TxnRef`, `vnp_Amount`, `vnp_ResponseCode`, `vnp_TransactionStatus`, `vnp_TransactionNo`, `vnp_PayDate`, `vnp_SecureHash` cùng các tham số gateway khác.
+
+IPN kiểm tra chữ ký, merchant, cấu trúc tham số, payment/provider và số tiền. Thành công chỉ khi cả `vnp_ResponseCode` và `vnp_TransactionStatus` bằng `00`. Tham số lặp hoặc chữ ký sai bị từ chối. Thành công cần mã giao dịch và ngày thanh toán hợp lệ.
+
+IPN luôn trả HTTP 200 với JSON riêng theo giao thức VNPay, **không bọc `success/data`**:
+
+```json
+{ "RspCode": "00", "Message": "Confirm success" }
 ```
-PENDING → SUCCESS  (sau khi confirm)
-PENDING → FAILED   (sau khi fail, hoặc hết hạn session 15 phút)
+
+| RspCode | Ý nghĩa |
+|---|---|
+| 00 | Kết quả đã được ghi nhận, bao gồm giao dịch thất bại hoặc cần đối soát |
+| 02 | IPN giống hệt đã được ghi nhận |
+| 01 | Không tìm thấy payment/booking |
+| 04 | Số tiền không khớp |
+| 97 | Chữ ký, merchant hoặc tham số không hợp lệ |
+| 99 | Lỗi xử lý, kết quả mâu thuẫn hoặc phát hành vé cần thử lại |
+
+Payment và booking được khóa và cập nhật trong transaction. IPN lặp/đồng thời không xác nhận lại booking. Tạo booking kiểm tra lại ghế trong transaction; hủy booking cập nhật có điều kiện PENDING để không ghi đè kết quả IPN. `PATCH /bookings/:id/confirm` đã bị chặn với HTTP 409; xác nhận booking phải đi qua thanh toán.
+
+**Thanh toán thành công nhưng không thể cung cấp vé:** lưu payment SUCCESS cùng `reviewRequired: true`, không xác nhận booking và không phát hành vé. Các lý do:
+
+- `HOLD_EXPIRED`: IPN được xử lý sau khi hết hạn giữ ghế, kể cả khách thanh toán trước hạn.
+- `BOOKING_CANCELLED`: booking đã hủy.
+- `SHOWTIME_UNAVAILABLE`: suất chiếu hủy hoặc đã bắt đầu.
+- `DUPLICATE_PAYMENT`: booking đã xác nhận hoặc đã có payment thành công khác.
+- `PAYMENT_OUTSIDE_WINDOW`: thời gian thanh toán nằm ngoài phiên.
+- `SEAT_CONFLICT`: ghế đã có booking khác chiếm/giữ.
+
+Admin xem `GET /payments/review-required` (page >= 1, limit 1–100), response theo cấu trúc `{ success: true, data: { data: [...], total, page, limit, totalPages } }`. Đây là danh sách đối soát; **chưa triển khai API hoàn tiền tự động**. Giao dịch cần đối soát không được coi là đã có vé chỉ vì payment SUCCESS.
+
+**Vé và email:** kết quả thanh toán được commit trước. Phát hành vé dùng transaction, khóa booking, kiểm tra payment SUCCESS hợp lệ, và unique index trên booking để chống vé trùng. Nếu phát hành lỗi, IPN trả 99; IPN lặp, `GET /tickets/booking/:id` của chủ booking và worker 30 giây sẽ thử lại. Worker chạy khi server khởi động; database lưu bền danh sách booking đã thanh toán nhưng thiếu vé. Email gửi sau khi phát hành vé mới, không chặn IPN; lỗi SMTP được log, chưa có hàng đợi retry email.
+
+**Return URL:** xác minh chữ ký và số tiền, không cập nhật database. Nếu chưa có `FRONTEND_URL`, trả:
+
+```json
+{
+  "success": true,
+  "data": {
+    "paymentId": 3,
+    "bookingId": 10,
+    "status": "PROCESSING",
+    "instructions": "Đăng nhập và gọi GET /payments/:id để đọc kết quả đã xác minh qua IPN"
+  }
+}
 ```
 
-> Nếu booking đã có payment `PENDING` còn hạn, gọi lại `POST /payments` sẽ trả về session cũ thay vì tạo mới.
+Nếu đã cấu hình frontend, trả HTTP 303 tới `<FRONTEND_URL>/<VNPAY_FRONTEND_RETURN_PATH>?paymentId=3&bookingId=10`. Không đưa JWT vào URL. Frontend đọc `GET /payments/:id` bằng JWT; Return và IPN có thể đến theo bất kỳ thứ tự nào. Không tự xác nhận thành công từ query của Return.
 
-> **Quy định bảo mật & phân quyền cho `POST /payments/:id/confirm` và `POST /payments/:id/fail`:**
-> - Cần xác thực Bearer token (`authMiddleware`). `userId` được trích xuất trực tiếp từ JWT của người dùng, không lấy từ request body.
-> - Backend xác minh quyền sở hữu: payment session phải thuộc chính `userId` đang đăng nhập (`payment.userId === req.user.userId`). Nếu không khớp, trả về lỗi `403 Forbidden` (`Bạn không có quyền thao tác trên phiên thanh toán này`).
-> - Chỉ cho phép xử lý mô phỏng đối với payment session có `provider === "MOCK"`. Nếu provider khác (như VNPAY/MOMO thật), trả về lỗi `422 Unprocessable Entity`.
-
-> Khi `confirm` thành công: **payment** (SUCCESS) + **booking** (CONFIRMED) được cập nhật trong cùng 1 database transaction, **vé điện tử** được phát hành tự động, và **email xác nhận** được gửi tới user.
-
-> Khi `fail`, booking vẫn giữ trạng thái `PENDING` — user có thể tạo payment session mới nếu booking chưa hết hold.
+**Kiểm thử:** `npm test`. Kiểm thử bao gồm chữ ký, encode, GMT+7, số tiền, IPN trùng/đồng thời, đối soát, rollback, phục hồi vé, quyền sở hữu và endpoint MOCK bị chặn. Sau triển khai cần kiểm thử end-to-end bằng tài khoản/thẻ Sandbox từ [tài liệu VNPay](https://sandbox.vnpayment.vn/apis/docs/thanh-toan-pay/pay.html): thành công, hủy, hết hạn, đóng trình duyệt, callback lặp và lỗi phát hành vé.
 
 ---
+
+
 
 ### Tickets
 
@@ -720,11 +799,11 @@ Chấp nhận: `JPG`, `PNG`, `WEBP`. Tối đa **5MB**.
    → totalPrice = tổng ghế + tổng combo
 
 6. Khởi tạo payment session
-   POST /payments  { bookingId, provider: "MOCK" }
+   POST /payments  { bookingId, provider: "VNPAY" }
    → Nhận paymentUrl
 
-7. Thực hiện thanh toán (mock)
-   POST /payments/:id/confirm
+7. Chuyển trình duyệt đến paymentUrl để thanh toán VNPay Sandbox
+   VNPay gọi GET /payments/vnpay/ipn để cập nhật kết quả
    → Payment: SUCCESS
    → Booking: CONFIRMED     (trong 1 transaction)
    → Ticket: tự động phát hành (qrCode sinh tự động)
@@ -751,15 +830,15 @@ Chấp nhận: `JPG`, `PNG`, `WEBP`. Tối đa **5MB**.
 ### Luồng thanh toán thất bại / thử lại
 
 ```
-1. POST /payments/:id/fail
+1. Khách hủy/thất bại ở VNPay; gateway gọi IPN
    → Payment: FAILED, Booking vẫn PENDING (nếu còn trong hold)
 
 2. Tạo lại payment session
    POST /payments  { bookingId }
-   → Session mới với expiredAt mới
+   → Session VNPAY mới, expiredAt vẫn không vượt hạn giữ ghế ban đầu
 
-3. Thử thanh toán lại
-   POST /payments/:id/confirm
+3. Chuyển trình duyệt đến paymentUrl mới
+   → VNPay gọi IPN, frontend đọc GET /payments/:id
 ```
 
 ### Luồng xác thực
@@ -842,7 +921,9 @@ booking_seats (id, booking_id, seat_id, seat_label, seat_type, price)
 booking_combos(id, booking_id, combo_id, combo_name, quantity, price)
 
 payments (id, booking_id, user_id, amount, status, provider,
-          transaction_id, expired_at, paid_at, created_at)
+          transaction_id, expired_at, paid_at, created_at,
+          gateway_response_code, gateway_transaction_status,
+          review_reason, gateway_processed_at)
 
 tickets (id, booking_id, user_id, showtime_id, qr_code,
          is_used, used_at, issued_at)
@@ -865,11 +946,11 @@ Cascade deletes: `cinemas → rooms → seats`, `bookings → booking_seats → 
 
 **Hold ghế không cần Redis hay cron** — `held_until` là timestamp trong DB. Query `findOccupiedSeatIdsByShowtimeId` chỉ tính ghế là "đang bị giữ" khi `status = 'PENDING' AND held_until > NOW()`. PENDING hết hạn tự động bị bỏ qua.
 
-**Payment tách khỏi Booking** — 1 booking có thể có nhiều lần thử thanh toán (FAILED rồi thử lại). Payment lưu `transactionId` từ cổng TT để đối soát. Nếu sau này cần tích hợp VNPay/Momo thật, chỉ cần thêm IPN endpoint mới ở Infrastructure layer, không đụng Application layer.
+**Payment tách khỏi Booking** — 1 booking có thể có nhiều lần thử thanh toán (FAILED rồi thử lại). Payment lưu `transactionId` từ cổng TT để đối soát. VNPay Sandbox đã được tích hợp qua service gateway, repository và ProcessVnpayHandler; MOMO chưa hỗ trợ.
 
-**Payment + Booking update trong 1 transaction** — `ConfirmPaymentHandler` dùng `withTransaction` để đảm bảo atomicity: hoặc cả 2 đều SUCCESS/CONFIRMED, hoặc cả 2 rollback. Không có trạng thái lệch nhau.
+**Payment + Booking update trong transaction** — IPN hợp lệ cập nhật payment và booking cùng transaction. Nếu tiền thành công nhưng booking không còn khả dụng, giữ payment SUCCESS cùng reviewRequired, không phát hành vé; admin đối soát.
 
-**Vé điện tử phát hành tự động** — `IssueTicketHandler` được gọi bên trong `ConfirmPaymentHandler` ngay sau khi transaction thành công. Nếu lỗi khi phát hành vé (mất mạng DB cục bộ...), API vẫn trả về "Thanh toán thành công" — không làm crash toàn bộ luồng. User có thể gọi `GET /tickets/booking/:id` sau đó để lấy lại vé.
+**Vé điện tử phát hành và phục hồi tự động** — sau khi lưu kết quả thanh toán, IssueTicketHandler phát hành vé có khóa và unique index. Vé thiếu được phục hồi qua IPN retry, API lấy vé của chủ booking và worker định kỳ 30 giây; không làm mất kết quả thanh toán đã nhận.
 
 **Email gửi bất đồng bộ trong try-catch** — lỗi SMTP không làm hỏng luồng thanh toán. Email failure được log ra console và bỏ qua.
 

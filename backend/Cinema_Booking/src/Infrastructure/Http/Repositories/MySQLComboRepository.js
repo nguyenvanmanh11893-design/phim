@@ -57,7 +57,8 @@ class MySQLComboRepository extends ComboRepositoryInterface {
        ${whereClause}
        ORDER BY created_at DESC
        LIMIT ? OFFSET ?`,
-      [...params, limit, offset],
+      // Avoid mysql2 DOUBLE binds for integer LIMIT/OFFSET on MySQL.
+      [...params, String(limit), String(offset)],
     );
 
     const [[{ total }]] = await this.pool.execute(
