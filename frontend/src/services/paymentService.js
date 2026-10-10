@@ -6,10 +6,10 @@ export const paymentService = {
    * Endpoint: POST /payments
    * @param {Object} params
    * @param {number|string} params.bookingId
-   * @param {string} [params.provider='MOCK']
+   * @param {string} [params.provider='VNPAY']
    * @returns {Promise<Object>} Đối tượng payment trong response.data
    */
-  async createPayment({ bookingId, provider = 'MOCK' }) {
+  async createPayment({ bookingId, provider = 'VNPAY' }) {
     if (!bookingId) {
       throw new ApiError('bookingId là bắt buộc', 400);
     }

@@ -1,0 +1,441 @@
+.payment-result-page {
+  padding: var(--space-6) 0 var(--space-12);
+}
+
+/* Sandbox Pill */
+.vnpay-sandbox-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  background-color: rgba(2, 132, 199, 0.1);
+  border: 1px solid rgba(2, 132, 199, 0.3);
+  border-radius: var(--radius-full);
+  padding: 4px 14px;
+  margin-bottom: var(--space-6);
+}
+
+.sandbox-badge {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #38bdf8;
+  letter-spacing: 0.05em;
+}
+
+.sandbox-text {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+/* Main Result Card */
+.result-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  padding: var(--space-8);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.4);
+  max-width: 760px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+/* Icon Badges */
+.result-icon-badge {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  margin: 0 auto var(--space-5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.2rem;
+}
+
+.result-icon-badge.pending {
+  background-color: rgba(234, 179, 8, 0.15);
+  border: 2px solid rgba(234, 179, 8, 0.4);
+  color: #facc15;
+}
+
+.result-icon-badge.success {
+  background-color: rgba(34, 197, 94, 0.15);
+  border: 2px solid rgba(34, 197, 94, 0.4);
+  color: #4ade80;
+  font-weight: 900;
+}
+
+.result-icon-badge.review {
+  background-color: rgba(245, 158, 11, 0.15);
+  border: 2px solid rgba(245, 158, 11, 0.4);
+  color: #fbbf24;
+}
+
+.result-icon-badge.failed,
+.result-icon-badge.error {
+  background-color: rgba(239, 68, 68, 0.15);
+  border: 2px solid rgba(239, 68, 68, 0.4);
+  color: #f87171;
+}
+
+/* Spinner Animation for Pending */
+.pending-spin {
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(234, 179, 8, 0.25);
+  border-top-color: #facc15;
+  border-radius: 50%;
+  animation: pendingSpin 0.9s linear infinite;
+}
+
+@keyframes pendingSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* Typography */
+.result-title {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.result-subtitle-warning {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #f59e0b;
+  margin-bottom: var(--space-4);
+}
+
+.result-desc {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  max-width: 580px;
+  margin: 0 auto var(--space-6);
+}
+
+/* Polling Indicator */
+.polling-indicator-box {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  background-color: rgba(234, 179, 8, 0.08);
+  border: 1px solid rgba(234, 179, 8, 0.2);
+  border-radius: var(--radius-full);
+  padding: 4px 14px;
+  margin-bottom: var(--space-5);
+  font-size: 0.85rem;
+  color: #fde047;
+}
+
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #facc15;
+  animation: pulseDot 1.4s infinite ease-in-out;
+}
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.3; transform: scale(0.8); }
+}
+
+/* Result Meta Box */
+.result-meta-box {
+  background-color: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4) var(--space-6);
+  margin: 0 auto var(--space-6);
+  text-align: left;
+}
+
+.meta-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.meta-line:last-child {
+  border-bottom: none;
+}
+
+.meta-line code {
+  color: var(--text-primary);
+  font-weight: 700;
+  background-color: var(--bg-card);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+}
+
+.meta-price {
+  font-weight: 800;
+  font-size: 1.15rem;
+  color: var(--color-primary);
+}
+
+.meta-price.highlight-green {
+  color: #4ade80;
+}
+
+/* Alerts */
+.result-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  text-align: left;
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-6);
+  font-size: 0.9rem;
+}
+
+.result-alert.warning {
+  background-color: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: #fde68a;
+}
+
+.result-alert.review-alert {
+  background-color: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: #fca5a5;
+}
+
+.result-alert p {
+  margin: var(--space-1) 0 0;
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+
+/* Booking Summary Card */
+.result-booking-summary {
+  background-color: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  margin-bottom: var(--space-6);
+  text-align: left;
+}
+
+.result-movie-row {
+  display: flex;
+  gap: var(--space-4);
+  align-items: flex-start;
+}
+
+.result-poster-img {
+  width: 72px;
+  height: 104px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+
+.result-poster-placeholder {
+  width: 72px;
+  height: 104px;
+  background-color: var(--bg-card);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.result-movie-info {
+  flex: 1;
+}
+
+.result-movie-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.result-info-text {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.result-info-text strong {
+  color: var(--text-primary);
+}
+
+/* Ticket Section */
+.result-ticket-section {
+  margin-bottom: var(--space-6);
+}
+
+.ticket-ready-box {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.05) 0%, rgba(16, 185, 129, 0.08) 100%);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  text-align: center;
+}
+
+.ticket-badge-pill {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #4ade80;
+  background-color: rgba(34, 197, 94, 0.15);
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  margin-bottom: var(--space-2);
+  letter-spacing: 0.05em;
+}
+
+.ticket-ready-header h4 {
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  margin-bottom: var(--space-4);
+}
+
+.ticket-qr-container {
+  display: inline-block;
+  background-color: #ffffff;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-3);
+}
+
+.ticket-qr-image {
+  width: 180px;
+  height: 180px;
+  display: block;
+}
+
+.ticket-qr-text {
+  margin-top: var(--space-2);
+  font-size: 0.75rem;
+  color: #333333;
+}
+
+.ticket-instruction {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* Ticket Issuing State */
+.ticket-issuing-box {
+  background-color: rgba(59, 130, 246, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  text-align: center;
+}
+
+.issuing-spinner-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+  color: #93c5fd;
+}
+
+.issuing-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(147, 197, 253, 0.3);
+  border-top-color: #60a5fa;
+  border-radius: 50%;
+  animation: pendingSpin 0.8s linear infinite;
+}
+
+.issuing-text {
+  font-size: 0.85rem;
+  color: #bfdbfe;
+  max-width: 500px;
+  margin: 0 auto;
+  line-height: 1.45;
+}
+
+/* Review Required Support Card */
+.review-support-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  margin-bottom: var(--space-6);
+  text-align: left;
+}
+
+.review-support-card h4 {
+  font-size: 1rem;
+  color: #fbbf24;
+  margin-bottom: var(--space-3);
+}
+
+.review-support-card p {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: var(--space-3);
+}
+
+.review-credentials-box {
+  background-color: var(--bg-card);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin-top: var(--space-4);
+}
+
+/* Failed resolution card */
+.failed-booking-resolution {
+  background-color: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  margin-bottom: var(--space-6);
+  text-align: center;
+}
+
+.resolution-repay-box p,
+.resolution-rebook-box p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* Action Buttons Row */
+.result-actions-row {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: var(--space-6);
+}
+
+@media (max-width: 640px) {
+  .result-card {
+    padding: var(--space-5);
+  }
+
+  .result-movie-row {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .meta-line {
+    font-size: 0.8rem;
+  }
+
+  .result-actions-row {
+    flex-direction: column;
+  }
+
+  .result-actions-row .btn {
+    width: 100%;
+  }
+}

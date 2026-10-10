@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router';
 import bookingService from '../services/bookingService';
-import paymentService from '../services/paymentService';
 import Breadcrumbs from '../components/common/Breadcrumbs';
 import { AgeBadge } from '../components/common/Badge';
 import { LoadingSection } from '../components/common/LoadingState';
@@ -37,10 +36,6 @@ export default function BookingDetailPage() {
   const [isCancelling, setIsCancelling] = useState(false);
   const [cancelSuccessMsg, setCancelSuccessMsg] = useState(null);
   const [cancelErrorMsg, setCancelErrorMsg] = useState(null);
-
-  // Payment initiation state
-  const [isInitiatingPayment, setIsInitiatingPayment] = useState(false);
-  const [paymentErrorMsg, setPaymentErrorMsg] = useState(null);
 
   // 1s clock tick for countdown timer
   const [currentNow, setCurrentNow] = useState(Date.now);
@@ -110,46 +105,10 @@ export default function BookingDetailPage() {
     }
   };
 
-  // Handle Proceed to Payment: re-verify booking -> POST /payments -> navigate to /checkout/:bookingId?paymentId=:id
-  const handleProceedToPayment = async () => {
-    setIsInitiatingPayment(true);
-    setPaymentErrorMsg(null);
-    setCancelErrorMsg(null);
-
-    try {
-      // 1. Kiểm tra lại booking từ backend
-      const freshBooking = await bookingService.getBookingById(booking.id);
-      setBooking(freshBooking);
-
-      if (freshBooking.status !== 'PENDING') {
-        throw new Error(`Đơn đặt vé đang ở trạng thái "${freshBooking.status}", không thể thanh toán.`);
-      }
-
-      const freshRemaining = freshBooking.heldUntil
-        ? Math.floor((new Date(freshBooking.heldUntil).getTime() - Date.now()) / 1000)
-        : 0;
-
-      if (freshRemaining <= 0) {
-        throw new Error('Đã hết thời gian giữ ghế cho đơn đặt vé này.');
-      }
-
-      // 2. POST /payments với bookingId và provider MOCK
-      const payment = await paymentService.createPayment({
-        bookingId: freshBooking.id,
-        provider: 'MOCK',
-      });
-
-      if (!payment || !payment.id) {
-        throw new Error('Không nhận được mã phiên thanh toán từ máy chủ.');
-      }
-
-      // 3. Lấy payment.id và điều hướng tới trang checkout
-      navigate(`/checkout/${freshBooking.id}?paymentId=${payment.id}`);
-    } catch (err) {
-      setPaymentErrorMsg(err.message || 'Không thể khởi tạo thanh toán. Vui lòng thử lại.');
-    } finally {
-      setIsInitiatingPayment(false);
-    }
+  // Handle Proceed to Payment: navigate to /checkout/:bookingId
+  const handleProceedToPayment = () => {
+    if (!booking?.id) return;
+    navigate(`/checkout/${booking.id}`);
   };
 
   const handleRetry = () => {
@@ -415,23 +374,6 @@ export default function BookingDetailPage() {
             </div>
           </div>
 
-          {/* Payment error message */}
-          {paymentErrorMsg && (
-            <div
-              style={{
-                backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                border: '1px solid rgba(239, 68, 68, 0.3)',
-                borderRadius: 'var(--radius-md)',
-                padding: 'var(--space-3) var(--space-4)',
-                color: '#f87171',
-                fontSize: '0.9rem',
-                marginTop: 'var(--space-4)',
-              }}
-            >
-              ⚠️ {paymentErrorMsg}
-            </div>
-          )}
-
           {/* Action buttons */}
           <div className="detail-actions-footer">
             <Link to="/movies" className="btn btn-secondary">
@@ -444,7 +386,7 @@ export default function BookingDetailPage() {
                   type="button"
                   className="btn btn-secondary"
                   style={{ borderColor: 'rgba(239, 68, 68, 0.5)', color: '#f87171' }}
-                  disabled={isCancelling || isInitiatingPayment}
+                  disabled={isCancelling}
                   onClick={handleCancelBooking}
                 >
                   {isCancelling ? 'Đang hủy...' : 'Hủy đặt vé'}
@@ -452,10 +394,10 @@ export default function BookingDetailPage() {
                 <button
                   type="button"
                   className="btn btn-primary"
-                  disabled={isCancelling || isInitiatingPayment}
+                  disabled={isCancelling}
                   onClick={handleProceedToPayment}
                 >
-                  {isInitiatingPayment ? 'Đang chuẩn bị...' : ' Thanh toán'}
+                  💳 Thanh toán
                 </button>
               </>
             )}

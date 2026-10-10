@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useSearchParams, useNavigate, Link } from 'react-router';
+import { useParams, useSearchParams, Link } from 'react-router';
 import bookingService from '../services/bookingService';
 import paymentService from '../services/paymentService';
 import Breadcrumbs from '../components/common/Breadcrumbs';
@@ -26,9 +26,8 @@ function formatDateTimeVN(isoString) {
 
 export default function CheckoutPage() {
   const { bookingId } = useParams();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const paymentIdParam = searchParams.get('paymentId');
-  const navigate = useNavigate();
 
   const [booking, setBooking] = useState(null);
   const [payment, setPayment] = useState(null);
@@ -36,13 +35,11 @@ export default function CheckoutPage() {
   const [error, setError] = useState(null);
   const [reloadKey, setReloadKey] = useState(0);
 
-  // Simulation execution state
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isCreatingSession, setIsCreatingSession] = useState(false);
+  // VNPay payment creation state
+  const [isCreatingPayment, setIsCreatingPayment] = useState(false);
   const [actionError, setActionError] = useState(null);
-  const [failureMessage, setFailureMessage] = useState(null);
 
-  // 1s clock tick for countdown timer
+  // 1s clock tick for countdown timer based strictly on backend heldUntil
   const [currentNow, setCurrentNow] = useState(Date.now);
   useEffect(() => {
     const timer = setInterval(() => setCurrentNow(Date.now()), 1000);
@@ -66,16 +63,17 @@ export default function CheckoutPage() {
 
         // 2. Fetch payment details if paymentId is present
         if (paymentIdParam) {
-          const paymentData = await paymentService.getPaymentById(paymentIdParam);
-          if (ignore) return;
+          try {
+            const paymentData = await paymentService.getPaymentById(paymentIdParam);
+            if (ignore) return;
 
-          // Check if payment belongs to this booking
-          if (Number(paymentData.bookingId) !== Number(bookingId)) {
-            throw new Error('Phiên thanh toán không khớp với đơn đặt vé này.');
+            // Check if payment belongs to this booking
+            if (Number(paymentData.bookingId) === Number(bookingId)) {
+              setPayment(paymentData);
+            }
+          } catch {
+            // Ignored if paymentId is invalid or expired
           }
-          setPayment(paymentData);
-        } else {
-          setPayment(null);
         }
       } catch (err) {
         if (!ignore) {
@@ -95,75 +93,45 @@ export default function CheckoutPage() {
     };
   }, [bookingId, paymentIdParam, reloadKey]);
 
-  // Handle manual session initialization if paymentId was missing
-  const handleCreateSession = async () => {
-    setIsCreatingSession(true);
+  // Handle VNPay Payment
+  const handleVNPayPayment = async () => {
+    if (isCreatingPayment || isHoldExpired) return;
+
+    setIsCreatingPayment(true);
     setActionError(null);
+
     try {
+      // Re-verify booking status from backend before requesting payment
       const freshBooking = await bookingService.getBookingById(bookingId);
       setBooking(freshBooking);
 
       if (freshBooking.status !== 'PENDING') {
-        throw new Error(`Đơn đặt vé đang ở trạng thái "${freshBooking.status}", không thể tạo thanh toán.`);
+        throw new Error(
+          `Đơn đặt vé đang ở trạng thái "${freshBooking.status}", không thể tạo thanh toán.`
+        );
       }
 
-      const p = await paymentService.createPayment({
-        bookingId: freshBooking.id,
-        provider: 'MOCK',
-      });
-      setPayment(p);
-      setSearchParams({ paymentId: p.id });
-      setFailureMessage(null);
-    } catch (err) {
-      setActionError(err.message || 'Không thể tạo phiên thanh toán mới.');
-    } finally {
-      setIsCreatingSession(false);
-    }
-  };
-
-  // Handle Mock Confirm Payment: POST /payments/:id/confirm
-  const handleConfirmMock = async () => {
-    if (!payment?.id || isSubmitting) return;
-
-    setIsSubmitting(true);
-    setActionError(null);
-
-    try {
-      const result = await paymentService.confirmPayment(payment.id);
-      // Backend returns { message, payment, booking, ticket }
-      // Navigate straight to electronic ticket page
-      navigate(`/tickets/${bookingId}`, {
-        replace: true,
-        state: { confirmedNow: true, message: result.message },
-      });
-    } catch (err) {
-      setActionError(err.message || 'Xác nhận thanh toán thất bại.');
-      setIsSubmitting(false);
-    }
-  };
-
-  // Handle Mock Fail Payment: POST /payments/:id/fail
-  const handleFailMock = async () => {
-    if (!payment?.id || isSubmitting) return;
-
-    setIsSubmitting(true);
-    setActionError(null);
-
-    try {
-      const result = await paymentService.failPayment(payment.id);
-      // Update payment state to FAILED
-      if (result.payment) {
-        setPayment(result.payment);
-      } else {
-        setPayment((prev) => (prev ? { ...prev, status: 'FAILED' } : null));
+      const freshHoldMs = freshBooking.heldUntil ? new Date(freshBooking.heldUntil).getTime() : 0;
+      if (freshHoldMs <= 0 || Date.now() >= freshHoldMs) {
+        throw new Error('Đã hết thời gian giữ ghế. Vui lòng chọn lại suất chiếu để đặt vé mới.');
       }
-      setFailureMessage(
-        result.message || 'Đã mô phỏng thanh toán thất bại. Đơn đặt vé vẫn được giữ nếu còn hạn.'
-      );
+
+      // Call POST /payments with provider = 'VNPAY'
+      const responseData = await paymentService.createPayment({
+        bookingId: Number(freshBooking.id),
+        provider: 'VNPAY',
+      });
+
+      if (!responseData || !responseData.paymentUrl) {
+        throw new Error('Không nhận được đường dẫn thanh toán hợp lệ từ cổng thanh toán VNPay.');
+      }
+
+      // Redirect full browser window to VNPay payment URL
+      window.location.assign(responseData.paymentUrl);
     } catch (err) {
-      setActionError(err.message || 'Không thể thực hiện hủy phiên thanh toán.');
-    } finally {
-      setIsSubmitting(false);
+      // Keep user on checkout page to display clear backend error
+      setActionError(err.message || 'Khởi tạo thanh toán VNPay thất bại. Vui lòng thử lại.');
+      setIsCreatingPayment(false);
     }
   };
 
@@ -197,19 +165,15 @@ export default function CheckoutPage() {
     );
   }
 
-  // Calculate timer based on the earlier of booking.heldUntil and payment.expiredAt
+  // Countdown timer strictly based on backend heldUntil
   const bookingHoldMs = booking.heldUntil ? new Date(booking.heldUntil).getTime() : 0;
-  const paymentExpMs = payment?.expiredAt ? new Date(payment.expiredAt).getTime() : Infinity;
-  const earliestExpiryMs = payment ? Math.min(bookingHoldMs, paymentExpMs) : bookingHoldMs;
-
   const remainingSeconds =
-    booking.status === 'PENDING' && earliestExpiryMs > 0
-      ? Math.max(0, Math.floor((earliestExpiryMs - currentNow) / 1000))
+    booking.status === 'PENDING' && bookingHoldMs > 0
+      ? Math.max(0, Math.floor((bookingHoldMs - currentNow) / 1000))
       : 0;
 
-  const isHoldExpired = booking.status === 'PENDING' && bookingHoldMs > 0 && currentNow > bookingHoldMs;
-  const isPaymentExpired = payment && payment.status === 'PENDING' && currentNow > paymentExpMs;
-  const isSessionExpired = isHoldExpired || isPaymentExpired;
+  const isHoldExpired =
+    booking.status === 'PENDING' && bookingHoldMs > 0 && currentNow >= bookingHoldMs;
 
   const timerMins = Math.floor(remainingSeconds / 60);
   const timerSecs = remainingSeconds % 60;
@@ -220,7 +184,7 @@ export default function CheckoutPage() {
   const cinema = showtime?.cinema;
   const room = showtime?.room;
 
-  // Check if booking already confirmed
+  // Check if booking is already confirmed
   if (booking.status === 'CONFIRMED') {
     return (
       <main className="container checkout-page">
@@ -274,7 +238,7 @@ export default function CheckoutPage() {
         items={[
           { label: 'Phim', to: '/movies' },
           { label: `Đặt vé #${booking.id}`, to: `/bookings/${booking.id}` },
-          { label: 'Thanh toán' },
+          { label: 'Thanh toán VNPay' },
         ]}
       />
 
@@ -283,58 +247,43 @@ export default function CheckoutPage() {
           {/* Header */}
           <div className="checkout-header">
             <div>
-              <span className="checkout-tag">Cổng thanh toán điện tử</span>
+              <span className="checkout-tag">Cổng thanh toán trực tuyến</span>
               <h1 className="checkout-title">Thanh toán vé xem phim</h1>
               <div className="checkout-subtitle">Mã đơn đặt vé: #{booking.id}</div>
             </div>
 
             {/* Timer Badge */}
-            {!isSessionExpired && remainingSeconds > 0 && (
+            {!isHoldExpired && remainingSeconds > 0 && (
               <div className={`checkout-countdown-badge ${remainingSeconds < 120 ? 'urgent' : ''}`}>
                 <span className="countdown-icon">⏳</span>
                 <div>
-                  <span className="countdown-label">Thời gian còn lại:</span>
+                  <span className="countdown-label">Thời gian giữ ghế:</span>
                   <span className="countdown-time">{formattedTimer}</span>
                 </div>
               </div>
             )}
           </div>
 
-          {/* Banner Thông báo hết hạn */}
-          {isSessionExpired && (
+          {/* Banner Hold Expired */}
+          {isHoldExpired && (
             <div className="checkout-alert expired">
               <span className="alert-icon">⌛</span>
               <div>
-                <strong>
-                  {isHoldExpired ? 'Đã hết thời gian giữ ghế!' : 'Phiên thanh toán đã hết hạn!'}
-                </strong>
+                <strong>Đã hết thời gian giữ ghế!</strong>
                 <p>
-                  {isHoldExpired
-                    ? 'Ghế của bạn đã được tự động giải phóng. Vui lòng chọn lại suất chiếu để đặt vé mới.'
-                    : 'Phiên thanh toán 15 phút đã kết thúc. Bạn có thể tạo phiên mới nếu thời gian giữ ghế vẫn còn.'}
+                  Thời gian giữ ghế tạm thời (10 phút) đã kết thúc. Ghế của bạn đã được giải phóng cho khách hàng khác. Vui lòng chọn lại suất chiếu để đặt vé mới.
                 </p>
               </div>
             </div>
           )}
 
-          {/* Thông báo lỗi thao tác */}
+          {/* Backend Error Alert */}
           {actionError && (
             <div className="checkout-alert error">
               <span className="alert-icon">⚠️</span>
               <div>
-                <strong>Thao tác không thành công</strong>
+                <strong>Không thể tiến hành thanh toán</strong>
                 <p>{actionError}</p>
-              </div>
-            </div>
-          )}
-
-          {/* Thông báo mô phỏng thất bại */}
-          {failureMessage && (
-            <div className="checkout-alert warning">
-              <span className="alert-icon">⚠️</span>
-              <div>
-                <strong>Thanh toán thất bại (Mô phỏng)</strong>
-                <p>{failureMessage}</p>
               </div>
             </div>
           )}
@@ -343,7 +292,7 @@ export default function CheckoutPage() {
           <div className="checkout-grid">
             {/* Left column: Booking & Showtime Summary */}
             <div className="checkout-summary-column">
-              <h3 className="section-heading">Thông tin vé</h3>
+              <h3 className="section-heading">Thông tin vé đã chọn</h3>
 
               <div className="checkout-movie-card">
                 {movie?.posterUrl ? (
@@ -405,97 +354,83 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            {/* Right column: Payment Provider & Action simulation */}
+            {/* Right column: Payment Provider & Action */}
             <div className="checkout-action-column">
               <h3 className="section-heading">Phương thức thanh toán</h3>
 
-              {/* Mock Payment Simulation Box */}
-              <div className="mock-payment-box">
-                <div className="mock-provider-badge">
-                  <span className="provider-icon">🛡️</span>
-                  <strong>MOCK PAYMENT SANDBOX</strong>
+              {/* VNPay Payment Box */}
+              <div className="vnpay-payment-box">
+                <div className="vnpay-provider-badge">
+                  <span className="vnpay-badge-logo">VNPAY</span>
+                  <span className="vnpay-badge-sub">SANDBOX — MÔI TRƯỜNG THỬ NGHIỆM</span>
                 </div>
 
-                <div className="mock-notice">
-                  <span className="notice-icon">ℹ️</span>
+                <div className="vnpay-notice">
+                  <span className="notice-icon">🛡️</span>
                   <div>
-                    <strong>Thanh toán mô phỏng — không thu tiền thật</strong>
+                    <strong>Cổng thanh toán VNPay Sandbox</strong>
                     <p>
-                      Hệ thống đang hoạt động ở chế độ thử nghiệm (Sandbox). Bạn có thể bấm chọn kết quả giả lập bên dưới để kiểm tra toàn bộ luồng xử lý.
+                      Giao dịch được xử lý an toàn qua cổng VNPay (môi trường thử nghiệm Sandbox).
+                      Sau khi bấm nút bên dưới, hệ thống sẽ chuyển hướng bạn đến giao diện thanh toán chính thức của VNPay.
                     </p>
                   </div>
                 </div>
 
+                <div className="vnpay-security-note">
+                  <span>🔒</span>
+                  <span>
+                    Bạn không cần nhập thông tin thẻ ngân hàng trên trang này. Toàn bộ thông tin thanh toán được bảo mật và xử lý trực tiếp trên cổng VNPay.
+                  </span>
+                </div>
+
                 {payment && (
-                  <div className="mock-session-info">
+                  <div className="vnpay-session-info">
                     <div className="session-info-line">
-                      <span>Mã phiên thanh toán:</span>
+                      <span>Mã phiên thanh toán gần nhất:</span>
                       <code>#{payment.id}</code>
                     </div>
                     <div className="session-info-line">
                       <span>Trạng thái phiên:</span>
-                      <span className={`payment-status-tag ${payment.status.toLowerCase()}`}>
+                      <span className={`payment-status-tag ${payment.status?.toLowerCase()}`}>
                         {payment.status === 'PENDING'
-                          ? 'Đang chờ xử lý'
+                          ? 'Đang chờ thanh toán'
                           : payment.status === 'SUCCESS'
-                            ? 'Thành công'
-                            : 'Thất bại'}
+                            ? 'Đã thanh toán'
+                            : 'Đã kết thúc'}
                       </span>
                     </div>
-                    <div className="session-info-line">
-                      <span>Hết hạn lúc:</span>
-                      <span>{formatDateTimeVN(payment.expiredAt)}</span>
-                    </div>
                   </div>
                 )}
 
-                {/* Simulation Action Buttons */}
-                {!isSessionExpired && payment && payment.status === 'PENDING' && (
-                  <div className="mock-buttons-group">
+                {/* Action Button: Thanh toán VNPay */}
+                {!isHoldExpired ? (
+                  <div className="vnpay-button-wrapper">
                     <button
                       type="button"
-                      className="btn btn-primary mock-btn success-btn"
-                      disabled={isSubmitting}
-                      onClick={handleConfirmMock}
+                      className="btn btn-primary vnpay-pay-btn"
+                      disabled={isCreatingPayment}
+                      onClick={handleVNPayPayment}
                     >
-                      {isSubmitting ? 'Đang xử lý...' : '✅ Mô phỏng thanh toán thành công'}
+                      {isCreatingPayment ? (
+                        <>
+                          <span className="vnpay-btn-spinner" />
+                          <span>Đang chuyển hướng sang VNPay...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="vnpay-btn-icon">💳</span>
+                          <span>Thanh toán VNPay</span>
+                        </>
+                      )}
                     </button>
-
-                    <button
-                      type="button"
-                      className="btn btn-secondary mock-btn fail-btn"
-                      disabled={isSubmitting}
-                      onClick={handleFailMock}
-                    >
-                      {isSubmitting ? 'Đang xử lý...' : '❌ Mô phỏng thanh toán thất bại'}
-                    </button>
-                  </div>
-                )}
-
-                {/* Case: No payment session or payment failed/expired, but booking is still held */}
-                {(!payment || payment.status === 'FAILED' || (isPaymentExpired && !isHoldExpired)) && !isHoldExpired && (
-                  <div className="retry-session-box">
-                    <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: 'var(--space-3)' }}>
-                      {payment?.status === 'FAILED'
-                        ? 'Phiên thanh toán đã kết thúc. Ghế của bạn vẫn đang được giữ, bạn có thể tạo phiên mới để thử lại.'
-                        : 'Chưa có phiên thanh toán hợp lệ hoặc phiên trước đã hết hạn.'}
+                    <p className="vnpay-button-hint">
+                      Nhấn nút để mở trang thanh toán VNPay Sandbox
                     </p>
-                    <button
-                      type="button"
-                      className="btn btn-primary"
-                      disabled={isCreatingSession}
-                      onClick={handleCreateSession}
-                    >
-                      {isCreatingSession ? 'Đang khởi tạo...' : '🔄 Khởi tạo lại phiên thanh toán'}
-                    </button>
                   </div>
-                )}
-
-                {/* Case: Hold completely expired */}
-                {isHoldExpired && (
+                ) : (
                   <div className="expired-actions-box">
                     <p style={{ color: '#f87171', fontSize: '0.9rem', marginBottom: 'var(--space-3)' }}>
-                      Thời gian giữ ghế 10 phút đã kết thúc. Vui lòng chọn lại suất chiếu để đặt chỗ.
+                      Thời gian giữ ghế đã kết thúc. Vui lòng chọn lại suất chiếu để đặt chỗ mới.
                     </p>
                     {booking.showtimeId && (
                       <Link to={`/booking/${booking.showtimeId}`} className="btn btn-primary">

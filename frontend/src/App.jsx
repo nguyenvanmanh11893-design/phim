@@ -18,6 +18,7 @@ import ProfilePage from './pages/ProfilePage';
 import MyBookingsPage from './pages/MyBookingsPage';
 import BookingDetailPage from './pages/BookingDetailPage';
 import CheckoutPage from './pages/CheckoutPage';
+import PaymentResultPage from './pages/PaymentResultPage';
 import TicketPage from './pages/TicketPage';
 import ForbiddenPage from './pages/ForbiddenPage';
 import NotFoundPage from './pages/NotFoundPage';
@@ -127,6 +128,14 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <CheckoutPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/payment-result"
+              element={
+                <ProtectedRoute>
+                  <PaymentResultPage />
                 </ProtectedRoute>
               }
             />

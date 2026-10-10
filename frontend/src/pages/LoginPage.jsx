@@ -21,7 +21,11 @@ export default function LoginPage() {
   const location = useLocation();
 
   // Extract return URL from location state or search params
-  const stateFrom = location.state?.from?.pathname;
+  const stateFrom = location.state?.from
+    ? typeof location.state.from === 'string'
+      ? location.state.from
+      : `${location.state.from.pathname || ''}${location.state.from.search || ''}`
+    : null;
   const searchParams = new URLSearchParams(location.search);
   const queryReturnUrl = searchParams.get('returnUrl');
   const returnUrl = getSafeReturnUrl(stateFrom || queryReturnUrl || '/');
